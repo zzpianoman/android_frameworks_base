@@ -2400,6 +2400,9 @@ class DatabaseHelper extends SQLiteOpenHelper {
              *
              * See: SettingsProvider.UpgradeController#onUpgradeLocked
              */
+
+            loadIntegerSetting(stmt, Settings.System.DEV_FORCE_SHOW_NAVBAR,
+                    R.integer.def_force_disable_navkeys);
         } finally {
             if (stmt != null) stmt.close();
         }
