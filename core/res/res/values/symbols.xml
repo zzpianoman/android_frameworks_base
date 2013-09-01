@@ -2350,4 +2350,7 @@
   <java-symbol type="drawable" name="ic_lock_settings" />
   <java-symbol type="drawable" name="ic_lock_user" />
 
+  <!-- Package Manager -->
+  <java-symbol type="array" name="config_disabledComponents" />
+
 </resources>
