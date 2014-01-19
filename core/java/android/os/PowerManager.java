@@ -843,6 +843,22 @@ public final class PowerManager {
     }
 
     /**
+     * Get seen wakelocks for wakelock blocker
+     *
+     * @hide
+     */
+    public String getSeenWakeLocks()
+    {
+        try {
+            if (mService != null) {
+                return mService.getSeenWakeLocks();
+            }
+        } catch (RemoteException e) {
+        }
+        return null;
+    }
+
+    /**
      * Returns true if the device is currently in power save mode.  When in this mode,
      * applications should reduce their functionality in order to conserve battery as
      * much as possible.  You can monitor for changes to this state with
