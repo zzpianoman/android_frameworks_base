@@ -2049,6 +2049,18 @@ public final class Settings {
         public static final String DOZE_OVERWRITE_VALUE = "doze_overwrite_value";
 
         /**
+         * Enable blocking wakelock
+         * @hide
+         */
+        public static final String WAKELOCK_BLOCKING_ENABLED = "wakelock_blocking_enabled";
+
+        /**
+         * List of wakelock blocks selected
+         * @hide
+         */
+        public static final String WAKELOCK_BLOCKING_LIST = "wakelock_blocking_list";
+
+        /**
          * Duration in for ambient display
          * @hide
          */
