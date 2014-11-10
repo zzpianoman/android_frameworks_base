@@ -236,6 +236,7 @@ public class NotificationPanelView extends PanelView implements
     private boolean mDoubleTapToSleepEnabled;
     private int mStatusBarHeaderHeight;
     private GestureDetector mDoubleTapGesture;
+    private boolean mOneFingerQuickSettingsIntercept;
 
     public NotificationPanelView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -302,6 +303,7 @@ public class NotificationPanelView extends PanelView implements
                 }
             }
         });
+        mSettingsObserver = new SettingsObserver(mHandler);
     }
 
     @Override
