@@ -1855,7 +1855,8 @@ public final class ActivityManagerService extends ActivityManagerNative
 
                     try {
                         int[] outId = new int[1];
-                        inm.enqueueNotificationWithTag("android", "android", null,
+                        inm.enqueueNotificationWithTag("android", "android",
+                                Notification.PRIVACY_GUARD_NOTIFICATION,
                                 R.string.privacy_guard_notification,
                                 notification, outId, root.userId);
                     } catch (RuntimeException e) {
@@ -1873,7 +1874,8 @@ public final class ActivityManagerService extends ActivityManagerNative
                     return;
                 }
                 try {
-                    inm.cancelNotificationWithTag("android", null,
+                    inm.cancelNotificationWithTag("android",
+                            Notification.PRIVACY_GUARD_NOTIFICATION,
                             R.string.privacy_guard_notification,  msg.arg1);
                 } catch (RuntimeException e) {
                     Slog.w(ActivityManagerService.TAG,
