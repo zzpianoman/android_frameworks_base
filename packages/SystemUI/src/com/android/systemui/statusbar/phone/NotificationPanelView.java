@@ -77,6 +77,10 @@ public class NotificationPanelView extends PanelView implements
 
     public static final long DOZE_ANIMATION_DURATION = 700;
 
+    private static final int ONE_FINGER_QS_INTERCEPT_OFF   = 0;
+    private static final int ONE_FINGER_QS_INTERCEPT_END   = 1;
+    private static final int ONE_FINGER_QS_INTERCEPT_START = 2;
+
     private KeyguardAffordanceHelper mAfforanceHelper;
     private StatusBarHeaderView mHeader;
     private KeyguardUserSwitcher mKeyguardUserSwitcher;
@@ -185,7 +189,8 @@ public class NotificationPanelView extends PanelView implements
     private int mOldLayoutDirection;
     private Handler mHandler = new Handler();
     private SettingsObserver mSettingsObserver;
-    private boolean mOneFingerQuickSettingsIntercept;
+
+    private int mOneFingerQuickSettingsInterceptMode;
 
     public NotificationPanelView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -710,7 +715,9 @@ public class NotificationPanelView extends PanelView implements
         boolean twoFingerQsEvent = mTwoFingerQsExpandPossible
                 && (event.getActionMasked() == MotionEvent.ACTION_POINTER_DOWN
                 && event.getPointerCount() == 2);
-        boolean oneFingerQsOverride = mOneFingerQuickSettingsIntercept
+
+        boolean oneFingerQsOverride =
+                mOneFingerQuickSettingsInterceptMode > ONE_FINGER_QS_INTERCEPT_OFF
                 && event.getActionMasked() == MotionEvent.ACTION_DOWN
                 && shouldQuickSettingsIntercept(event.getX(), event.getY(), -1, false);
         if ((twoFingerQsEvent || oneFingerQsOverride)
@@ -1339,13 +1346,19 @@ public class NotificationPanelView extends PanelView implements
 
         final float w = getMeasuredWidth();
         float region = (w * (1.f/3.f)); // TODO overlay region fraction?
-        final boolean showQsOverride = isLayoutRtl() ? (x < region) : (w - region < x)
-                        && mStatusBarState == StatusBarState.SHADE;
+
+        boolean showQsOverride = false;
+
+        if (mOneFingerQuickSettingsInterceptMode == ONE_FINGER_QS_INTERCEPT_END) {
+            showQsOverride = isLayoutRtl() ? (x < region) : (w - region < x);
+        } else if (mOneFingerQuickSettingsInterceptMode == ONE_FINGER_QS_INTERCEPT_START) {
+            showQsOverride = isLayoutRtl() ? (w - region < x) : (x < region);
+        }
 
         if (mQsExpanded) {
             return onHeader || (mScrollView.isScrolledToBottom() && yDiff < 0) && isInQsArea(x, y);
         } else {
-            return onHeader || showQsOverride;
+            return onHeader || (showQsOverride && mStatusBarState == StatusBarState.SHADE);
         }
     }
 
@@ -2079,8 +2092,9 @@ public class NotificationPanelView extends PanelView implements
 
         public void update() {
             ContentResolver resolver = mContext.getContentResolver();
-            mOneFingerQuickSettingsIntercept = Settings.System.getIntForUser(
-                    resolver, Settings.System.STATUS_BAR_QUICK_QS_PULLDOWN, 1,
+            mOneFingerQuickSettingsInterceptMode = Settings.System.getIntForUser(
+                    resolver, Settings.System.STATUS_BAR_QUICK_QS_PULLDOWN,
+                    ONE_FINGER_QS_INTERCEPT_OFF, UserHandle.USER_CURRENT);
                     UserHandle.USER_CURRENT) == 1;
         }
     }
