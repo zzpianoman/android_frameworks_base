@@ -39,4 +39,8 @@
     <!-- QuickSettings main tiles -->
     <string name="qs_main_tiles_title">Enlarge first row</string>
 
+    <!-- Quick settings disable on lockscreen -->
+    <string name="block_on_secure_keyguard_title">Disable quick settings</string>
+    <string name="block_on_secure_keyguard_summary">Disables quick settings in the keyguard for a secure lock only</string>
+
 </resources>

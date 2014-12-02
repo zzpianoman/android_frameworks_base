@@ -48,6 +48,12 @@
         android:title="@string/qs_main_tiles_title"
         android:defaultValue="true" />
 
+    <com.android.systemui.tuner.SecureSettingSwitchPreference
+        android:key="status_bar_locked_on_secure_keyguard"
+        android:title="@string/block_on_secure_keyguard_title"
+        android:summary="@string/block_on_secure_keyguard_summary"
+        android:defaultValue="true" />
+
     <PreferenceScreen
         android:title="@string/status_bar" >
 
