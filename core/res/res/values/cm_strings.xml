@@ -204,6 +204,8 @@
     <string name="app_ops_use_voice_volume">control the voice call volume</string>
     <string name="app_ops_write_mms">write an MMS message</string>
     <string name="app_ops_write_sms">write an SMS message</string>
+    <string name="app_ops_read_other_accounts">read other accounts</string>
+    <string name="app_ops_read_phone_info">read phone info</string>
 
     <!-- Shown in the lock screen when there is SIM card IO error. -->
     <string name="lockscreen_sim_error_message_short">Invalid Card.</string>

@@ -251,8 +251,12 @@ public class AppOpsManager {
     public static final int OP_ALARM_WAKEUP = 60;
     /** @hide */
     public static final int OP_SU = 61;
+    /** @hide List or read other apps account data */
+    public static final int OP_OTHER_ACCOUNTS = 62;
+    /** @hide Read phone info like phone number and IMSI */
+    public static final int OP_READ_PHONE_INFO = 63;
     /** @hide */
-    public static final int _NUM_OP = 62;
+    public static final int _NUM_OP = 64;
 
     /** Access to coarse location information. */
     public static final String OPSTR_COARSE_LOCATION =
@@ -385,6 +389,10 @@ public class AppOpsManager {
             "android:alarm_wakeup";
     private static final String OPSTR_SU =
             "android:su";
+    private static final String OPSTR_OTHER_ACCOUNTS =
+            "android:other_accounts";
+    private static final String OPSTR_READ_PHONE_INFO =
+            "android:read_phone_info";
 
     /**
      * This maps each operation to the operation that serves as the
@@ -456,7 +464,9 @@ public class AppOpsManager {
             OP_DELETE_CALL_LOG,
             OP_DATA_CONNECT_CHANGE,
             OP_ALARM_WAKEUP,
-            OP_SU
+            OP_SU,
+            OP_OTHER_ACCOUNTS,
+            OP_READ_PHONE_INFO,
     };
 
     /**
@@ -526,6 +536,8 @@ public class AppOpsManager {
             null,
             null,
             OPSTR_SU,
+            null,
+            null,
     };
 
     /**
@@ -595,6 +607,8 @@ public class AppOpsManager {
         OPSTR_DATA_CONNECT_CHANGE,
         OPSTR_ALARM_WAKEUP,
         OPSTR_SU,
+        OPSTR_OTHER_ACCOUNTS,
+        OPSTR_READ_PHONE_INFO,
     };
 
     /**
@@ -664,6 +678,8 @@ public class AppOpsManager {
             "DATA_CONNECT_CHANGE",
             "ALARM_WAKEUP",
             "SU",
+            "OTHER_ACCOUNTS",
+            "READ_PHONE_INFO",
     };
 
     /**
@@ -733,6 +749,8 @@ public class AppOpsManager {
             android.Manifest.permission.MODIFY_PHONE_STATE,
             null, // OP_ALARM_WAKEUP
             null,
+            android.Manifest.permission.GET_ACCOUNTS,
+            android.Manifest.permission.READ_PHONE_STATE,
     };
 
     /**
@@ -803,6 +821,8 @@ public class AppOpsManager {
             null, //DATA_CONNECT_CHANGE
             null, //ALARM_WAKEUP
             UserManager.DISALLOW_SU, //SU TODO: this should really be investigated.
+            null, //OTHER_ACCOUNTS
+            null, //READ_PHONE_INFO
     };
 
     /**
@@ -872,6 +892,8 @@ public class AppOpsManager {
             false, //DATA_CONNECT_CHANGE
             true, //ALARM_WAKEUP
             false, //SU
+            true, //OTHER_ACCOUNTS
+            true, //READ_PHONE_INFO
     };
 
     /**
@@ -940,6 +962,8 @@ public class AppOpsManager {
             AppOpsManager.MODE_ALLOWED,
             AppOpsManager.MODE_ALLOWED, // OP_ALARM_WAKEUP
             AppOpsManager.MODE_ASK, // OP_SU
+            AppOpsManager.MODE_ALLOWED,
+            AppOpsManager.MODE_ALLOWED,
     };
 
     /**
@@ -1009,6 +1033,8 @@ public class AppOpsManager {
             AppOpsManager.MODE_ASK,     // OP_DATA_CONNECT_CHANGE
             AppOpsManager.MODE_ALLOWED, // OP_ALARM_WAKEUP
             AppOpsManager.MODE_ASK,     // OP_SU
+            AppOpsManager.MODE_ASK,     // OP_OTHER_ACCOUNTS
+            AppOpsManager.MODE_ASK,     // OP_READ_PHONE_INFO
     };
 
     /**
@@ -1077,6 +1103,8 @@ public class AppOpsManager {
         true,     // OP_DATA_CONNECT_CHANGE
         false,    // OP_ALARM_WAKEUP
         true,     // OP_SU
+        true,     // OP_OTHER_ACCOUNTS
+        true,     // OP_READ_PHONE_INFO
     };
 
     /**
@@ -1149,6 +1177,8 @@ public class AppOpsManager {
             false,     // OP_DATA_CONNECT_CHANGE
             false,     // OP_ALARM_WAKEUP
             false,     // OP_SU
+            false,     // OP_OTHER_ACCOUNTS
+            false,     // OP_READ_PHONE_INFO
     };
 
     private static HashMap<String, Integer> sOpStrToOp = new HashMap<String, Integer>();
@@ -1194,8 +1224,8 @@ public class AppOpsManager {
                     + " should be " + _NUM_OP);
         }
         if (sOpAllowSystemRestrictionBypass.length != _NUM_OP) {
-            throw new IllegalStateException("sOpAllowSYstemRestrictionsBypass length "
-                    + sOpRestrictions.length + " should be " + _NUM_OP);
+            throw new IllegalStateException("sOpAllowSystemRestrictionsBypass length "
+                    + sOpAllowSystemRestrictionBypass.length + " should be " + _NUM_OP);
         }
         if (sOpStrictMode.length != _NUM_OP) {
             throw new IllegalStateException("sOpStrictMode length "
