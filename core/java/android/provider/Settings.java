@@ -2116,6 +2116,12 @@ public final class Settings {
          */
         public static final String DOZE_TIME_MODE = "doze_time_mode";
 
+        /** Whether to show the brightness slider in quick settings panel.
+         *
+         * @hide
+         */
+        public static final String QS_SHOW_BRIGHTNESS_SLIDER = "qs_show_brightness_slider";
+
         /**
          * List of QS tile names
          * @hide
