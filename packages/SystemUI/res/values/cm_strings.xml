@@ -46,4 +46,6 @@
     <!-- Content description of the caffeine tile in quick settings when on (not shown on the screen). [CHAR LIMIT=NONE] -->
     <string name="accessibility_quick_settings_caffeine_on">Caffeine on.</string>
 
+    <string name="quick_settings_lte_tile_title">LTE</string>
+
 </resources>
