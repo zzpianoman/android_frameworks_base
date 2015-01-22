@@ -25,4 +25,8 @@
     <!-- Content description of the location tile in quick settings when on, high accuracy mode (not shown on the screen). [CHAR LIMIT=NONE] -->
     <string name="accessibility_quick_settings_location_high_accuracy">Location reporting: high accuracy mode.</string>
 
+    <string name="quick_settings_profile_detail_menu_title">Select Profile:</string>
+    <string name="quick_settings_profiles_title">System profiles</string>
+    <string name="quick_settings_profiles_disabled">Profiles disabled</string>
+
 </resources>
