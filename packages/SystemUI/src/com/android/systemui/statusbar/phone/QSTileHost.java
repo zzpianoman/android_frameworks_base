@@ -49,6 +49,7 @@ import com.android.systemui.qs.tiles.LocationTile;
 import com.android.systemui.qs.tiles.NfcTile;
 import com.android.systemui.qs.tiles.LockscreenToggleTile;
 import com.android.systemui.qs.tiles.RebootTile;
+import com.android.systemui.qs.tiles.LteTile;
 import com.android.systemui.qs.tiles.RotationLockTile;
 import com.android.systemui.qs.tiles.UsbTetherTile;
 import com.android.systemui.qs.tiles.ScreenOffTile;
@@ -304,6 +305,8 @@ public class QSTileHost implements QSTile.Host {
                 return new ScreenOffTile(this);
             case QSConstants.TILE_BATTERY_RESERVE:
                 return new BatteryReserveTile(this);
+            case QSConstants.TILE_LTE:
+                return new LteTile(this);
             default:
                 throw new IllegalArgumentException("Bad tile spec: " + tileSpec);
         }
