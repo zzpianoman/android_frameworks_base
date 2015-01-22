@@ -45,6 +45,7 @@ import com.android.systemui.qs.tiles.IntentTile;
 import com.android.systemui.qs.tiles.LocationTile;
 import com.android.systemui.qs.tiles.NfcTile;
 import com.android.systemui.qs.tiles.LockscreenToggleTile;
+import com.android.systemui.qs.tiles.LteTile;
 import com.android.systemui.qs.tiles.ProfilesTile;
 import com.android.systemui.qs.tiles.PerfProfileTile;
 import com.android.systemui.qs.tiles.RotationLockTile;
@@ -300,6 +301,8 @@ public class QSTileHost implements QSTile.Host {
                 return new NfcTile(this);
             case QSConstants.TILE_LOCKSCREEN:
                 return new LockscreenToggleTile(this);
+            case QSConstants.TILE_LTE:
+                return new LteTile(this);
             default:
                 throw new IllegalArgumentException("Bad tile spec: " + tileSpec);
         }
