@@ -28,5 +28,7 @@
     <string name="quick_settings_profile_detail_menu_title">Select Profile:</string>
     <string name="quick_settings_profiles_title">System profiles</string>
     <string name="quick_settings_profiles_disabled">Profiles disabled</string>
+    <string name="quick_settings_network_adb_enabled_label">Enabled</string>
+    <string name="quick_settings_network_adb_disabled_label">Disabled</string>
 
 </resources>

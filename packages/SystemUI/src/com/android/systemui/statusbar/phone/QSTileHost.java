@@ -32,6 +32,7 @@ import com.android.internal.util.cm.QSConstants;
 import com.android.internal.util.cm.QSUtils;
 import com.android.systemui.R;
 import com.android.systemui.qs.QSTile;
+import com.android.systemui.qs.tiles.AdbOverNetworkTile;
 import com.android.systemui.qs.tiles.AirplaneModeTile;
 import com.android.systemui.qs.tiles.BluetoothTile;
 import com.android.systemui.qs.tiles.CastTile;
@@ -288,6 +289,8 @@ public class QSTileHost implements QSTile.Host {
                 return new ProfilesTile(this);
             case QSConstants.TILE_PERFORMANCE:
                 return new PerfProfileTile(this);
+            case QSConstants.TILE_ADB_NETWORK:
+                return new AdbOverNetworkTile(this);
             default:
                 throw new IllegalArgumentException("Bad tile spec: " + tileSpec);
         }
