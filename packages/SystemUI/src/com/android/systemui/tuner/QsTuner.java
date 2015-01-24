@@ -209,6 +209,7 @@ public class QsTuner extends Fragment implements Callback {
         else if (spec.equals("compass")) return R.string.qs_tile_compass;
         else if (spec.equals("sync")) return R.string.quick_settings_sync_label;
         else if (spec.equals("usb_tether")) return R.string.quick_settings_usb_tether_label;
+        else if (spec.equals("timeout")) return R.string.quick_settings_timeout_label;
         return 0;
     }
 
@@ -461,6 +462,7 @@ public class QsTuner extends Fragment implements Callback {
             else if (mSpec.equals("compass")) return R.drawable.ic_qs_compass_on;
             else if (mSpec.equals("sync")) return R.drawable.ic_qs_sync_on;
             else if (mSpec.equals("usb_tether")) return R.drawable.ic_qs_usb_tether_on;
+            else if (mSpec.equals("timeout")) return R.drawable.ic_qs_screen_timeout_vector;
             return R.drawable.android;
         }
 
