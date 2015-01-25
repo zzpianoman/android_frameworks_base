@@ -127,7 +127,7 @@
         android:layout_marginBottom="4dp"
         android:drawablePadding="6dp"
         android:drawableStart="@drawable/ic_access_alarms_small"
-        android:textColor="#64ffffff"
+        android:textColor="@color/exposed_button"
         android:textAppearance="@style/TextAppearance.StatusBar.Expanded.Date"
         android:paddingEnd="6dp"
         android:paddingStart="6dp"
