@@ -18,4 +18,6 @@
 
     <string name="quick_settings_battery_reserve_label">Emergency Battery</string>
 
+    <string name="quick_settings_lte_tile_title">LTE</string>
+
 </resources>
