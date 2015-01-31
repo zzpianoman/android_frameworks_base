@@ -45,6 +45,7 @@ import com.android.systemui.qs.tiles.RotationLockTile;
 import com.android.systemui.qs.tiles.ScreenOffTile;
 import com.android.systemui.qs.tiles.ScreenshotTile;
 import com.android.systemui.qs.tiles.VolumeTile;
+import com.android.systemui.qs.tiles.SyncTile;
 import com.android.systemui.qs.tiles.WifiTile;
 import com.android.systemui.statusbar.policy.BluetoothController;
 import com.android.systemui.statusbar.policy.CastController;
@@ -274,6 +275,7 @@ public class QSTileHost implements QSTile.Host, Tunable {
         else if (tileSpec.equals("headsup")) return new HeadsUpTile(this);
         else if (tileSpec.equals("nfc")) return new NfcTile(this);
         else if (tileSpec.equals("compass")) return new CompassTile(this);
+        else if (tileSpec.equals("sync")) return new SyncTile(this);
         else if (tileSpec.startsWith(IntentTile.PREFIX)) return IntentTile.create(this,tileSpec);
         else throw new IllegalArgumentException("Bad tile spec: " + tileSpec);
     }
