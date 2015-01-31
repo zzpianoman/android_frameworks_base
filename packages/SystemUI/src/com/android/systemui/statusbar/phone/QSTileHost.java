@@ -51,6 +51,7 @@ import com.android.systemui.qs.tiles.LockscreenToggleTile;
 import com.android.systemui.qs.tiles.RebootTile;
 import com.android.systemui.qs.tiles.LteTile;
 import com.android.systemui.qs.tiles.RotationLockTile;
+import com.android.systemui.qs.tiles.SyncTile;
 import com.android.systemui.qs.tiles.UsbTetherTile;
 import com.android.systemui.qs.tiles.ScreenOffTile;
 import com.android.systemui.qs.tiles.ScreenshotTile;
@@ -307,6 +308,8 @@ public class QSTileHost implements QSTile.Host {
                 return new BatteryReserveTile(this);
             case QSConstants.TILE_LTE:
                 return new LteTile(this);
+            case QSConstants.TILE_SYNC:
+                return new SyncTile(this);
             default:
                 throw new IllegalArgumentException("Bad tile spec: " + tileSpec);
         }
