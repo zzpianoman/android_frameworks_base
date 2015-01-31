@@ -20,6 +20,7 @@
 package android.telephony;
 
 import android.annotation.SystemApi;
+import android.Manifest;
 import android.annotation.SdkConstant;
 import android.annotation.SdkConstant.SdkConstantType;
 import android.app.AppOpsManager;
@@ -29,6 +30,7 @@ import android.os.Bundle;
 import android.os.RemoteException;
 import android.os.ServiceManager;
 import android.os.SystemProperties;
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.android.internal.telecom.ITelecomService;
@@ -41,6 +43,7 @@ import com.android.internal.telephony.TelephonyProperties;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -996,6 +999,15 @@ public class TelephonyManager {
         return retVal;
     }
 
+    /**
+     * Return if the current radio is LTE on GSM
+     * @hide
+     */
+    public static int getLteOnGsmModeStatic() {
+        return SystemProperties.getInt(TelephonyProperties.PROPERTY_LTE_ON_GSM_DEVICE,
+                    0);
+    }
+
     //
     //
     // Current Network
@@ -1325,13 +1337,24 @@ public class TelephonyManager {
      */
     /** {@hide} */
     public String getIccOperatorNumeric(long subId) {
-       try{
+        try {
             return getITelephony().getIccOperatorNumeric(subId);
-       } catch (RemoteException ex) {
-           return null;
-       } catch (NullPointerException ex) {
-           return null;
-       }
+        } catch (RemoteException ex) {
+            return null;
+        } catch (NullPointerException ex) {
+            return null;
+        }
+    }
+
+    /**
+     * {@hide}
+     */
+    public void toggleLTE(boolean on) {
+        try {
+            getITelephony().toggleLTE(on);
+        } catch (RemoteException e) {
+            //Silently fail
+        }
     }
 
     /** Unknown network class. {@hide} */
@@ -1696,6 +1719,21 @@ public class TelephonyManager {
         } catch (NullPointerException ex) {
             // This could happen before phone restarts due to crashing
             return PhoneConstants.LTE_ON_CDMA_UNKNOWN;
+        }
+    }
+
+    /**
+     * Return if the current radio is LTE on GSM
+     * @hide
+     */
+    public int getLteOnGsmMode() {
+        try {
+            return getITelephony().getLteOnGsmMode();
+        } catch (RemoteException ex) {
+            return 0;
+        } catch (NullPointerException ex) {
+            // This could happen before phone restarts due to crashing
+            return 0;
         }
     }
 
@@ -2444,6 +2482,40 @@ public class TelephonyManager {
         } catch (RemoteException ex) {
         } catch (NullPointerException ex) {
         }
+    }
+
+    /**
+     * Allows an application to add a protected sms address if the application has
+     * been granted the permission MODIFY_PROTECTED_SMS_LIST.
+     * @param address
+     * @hide
+     */
+    public void addProtectedSmsAddress(String address) {
+        mContext.enforceCallingOrSelfPermission(
+                Manifest.permission.MODIFY_PROTECTED_SMS_LIST, null);
+        try {
+            getITelephony().addProtectedSmsAddress(address);
+        } catch (RemoteException ex) {
+        } catch (NullPointerException ex) {
+        }
+    }
+
+    /**
+     * Allows an application to revoke/remove a protected sms address if the application has been
+     * granted the permission MODIFY_PROTECTED_SMS_LIST.
+     * @param address
+     * @return true if address is successfully removed
+     * @hide
+     */
+    public boolean revokeProtectedSmsAddress(String address) {
+        mContext.enforceCallingOrSelfPermission(
+                Manifest.permission.MODIFY_PROTECTED_SMS_LIST, null);
+        try {
+            return getITelephony().revokeProtectedSmsAddress(address);
+        } catch (RemoteException ex) {
+        } catch (NullPointerException ex) {
+        }
+        return false;
     }
 
     /**

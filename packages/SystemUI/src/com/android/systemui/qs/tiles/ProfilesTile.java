@@ -116,7 +116,7 @@ public class ProfilesTile extends QSTile<QSTile.State> {
 
         @Override
         public int getTitle() {
-            return R.string.quick_settings_profiles_title;
+            return R.string.quick_settings_profiles_detail_title;
         }
 
         @Override
@@ -134,7 +134,6 @@ public class ProfilesTile extends QSTile<QSTile.State> {
 
             final ListView list = mDetails.getListView();
             list.setChoiceMode(AbsListView.CHOICE_MODE_SINGLE);
-            list.setDivider(null);
             list.setOnItemClickListener(this);
 
             mDetails.setEmptyState(R.drawable.ic_qs_system_profiles,
