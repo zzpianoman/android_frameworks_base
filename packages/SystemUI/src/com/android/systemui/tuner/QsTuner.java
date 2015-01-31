@@ -207,6 +207,7 @@ public class QsTuner extends Fragment implements Callback {
         else if (spec.equals("headsup")) return R.string.quick_settings_heads_up_label;
         else if (spec.equals("nfc")) return R.string.quick_settings_nfc;
         else if (spec.equals("compass")) return R.string.qs_tile_compass;
+        else if (spec.equals("sync")) return R.string.quick_settings_sync_label;
         return 0;
     }
 
@@ -457,6 +458,7 @@ public class QsTuner extends Fragment implements Callback {
             else if (mSpec.equals("headsup")) return R.drawable.ic_qs_heads_up_on;
             else if (mSpec.equals("nfc")) return R.drawable.ic_qs_nfc_on;
             else if (mSpec.equals("compass")) return R.drawable.ic_qs_compass_on;
+            else if (mSpec.equals("sync")) return R.drawable.ic_qs_sync_on;
             return R.drawable.android;
         }
 
