@@ -38,6 +38,11 @@
         android:summary="@string/quick_settings_vibrate_summary"
         android:defaultValue="false"/>
 
+    <com.android.systemui.tuner.SystemSettingSwitchPreference
+        android:key="qs_use_four_columns"
+        android:title="@string/qs_four_columns_title"
+        android:defaultValue="false" />
+
     <PreferenceScreen
         android:title="@string/status_bar" >
 
