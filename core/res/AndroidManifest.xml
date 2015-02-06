@@ -227,6 +227,7 @@
 
     <protected-broadcast android:name="android.os.UpdateLock.UPDATE_LOCK_CHANGED" />
     <protected-broadcast android:name="android.intent.action.NAVBAR_EDIT" />
+    <protected-broadcast android:name="android.intent.action.NAVBAR_RING_EDIT" />
 
     <protected-broadcast android:name="android.intent.action.DREAMING_STARTED" />
     <protected-broadcast android:name="android.intent.action.DREAMING_STOPPED" />
@@ -996,6 +997,14 @@
         android:protectionLevel="dangerous"
         android:description="@string/permdesc_changeWifiMulticastState"
         android:label="@string/permlab_changeWifiMulticastState" />
+
+    <!-- Allows an application to override the power key action
+        @hide -->
+    <permission android:name="android.permission.PREVENT_POWER_KEY"
+        android:permissionGroup="android.permission-group.HARDWARE_CONTROLS"
+        android:protectionLevel="dangerous"
+        android:label="@string/permlab_preventpower"
+        android:description="@string/permdesc_preventpower" />
 
     <!-- Allows access to the vibrator -->
     <permission android:name="android.permission.VIBRATE"
@@ -2944,6 +2953,13 @@
     <permission android:name="android.permission.HARDWARE_ABSTRACTION_ACCESS"
         android:label="@string/permlab_useHardwareFramework"
         android:description="@string/permdesc_useHardwareFramework"
+        android:protectionLevel="signature" />
+
+    <!-- Allows an application to use the system Torch service
+        @hide-->
+    <permission android:name="android.permission.ACCESS_TORCH_SERVICE"
+        android:label="@string/permlab_accessTorchService"
+        android:description="@string/permdesc_accessTorchService"
         android:protectionLevel="signature" />
 
     <!-- The system process is explicitly the only one allowed to launch the
