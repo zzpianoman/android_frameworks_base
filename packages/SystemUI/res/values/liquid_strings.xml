@@ -19,6 +19,7 @@
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
 
     <!-- Quick settings -->
+    <string name="quick_settings_screen_off">Screen off</string>
     <string name="quick_settings_screenshot">Screenshot</string>
 
 </resources>
