@@ -35,6 +35,7 @@ import android.telephony.SubInfoRecord;
 import android.telephony.SubscriptionManager;
 import android.telephony.TelephonyManager;
 import android.util.Slog;
+import android.util.SparseLongArray;
 import android.view.View;
 import android.widget.TextView;
 
@@ -48,7 +49,6 @@ import com.android.systemui.R;
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.HashMap;
 
 public class MSimNetworkControllerImpl extends NetworkControllerImpl {
     // debug
@@ -75,6 +75,7 @@ public class MSimNetworkControllerImpl extends NetworkControllerImpl {
     int[] mMSimDataDirectionIconId; // data + data direction on phones
     int[] mMSimDataSignalIconId;
     int[] mMSimDataTypeIconId;
+    int[] mMSimDataRoamIconId;
     int[] mNoMSimIconId;
     int[] mMSimMobileActivityIconId; // overlay arrows for data direction
 
@@ -95,7 +96,7 @@ public class MSimNetworkControllerImpl extends NetworkControllerImpl {
     String[] mSpn;
     String[] mPlmn;
     int mPhoneCount = 0;
-    private HashMap<Long, Integer> mSubIdPhoneIdMap;
+    private SparseLongArray mPhoneIdSubIdMapping;
     ArrayList<MSimSignalCluster> mSimSignalClusters = new ArrayList<MSimSignalCluster>();
 
     public interface MSimSignalCluster {
@@ -103,7 +104,7 @@ public class MSimNetworkControllerImpl extends NetworkControllerImpl {
                 String contentDescription);
 
         void setMobileDataIndicators(boolean visible, int strengthIcon, int activityIcon,
-                int typeIcon, String contentDescription, String typeContentDescription,
+                int typeIcon, int roamingIcon, String contentDescription, String typeContentDescription,
                 int phoneId, int noSimIcon);
 
         void setIsAirplaneMode(boolean is, int airplaneIcon);
@@ -123,6 +124,7 @@ public class MSimNetworkControllerImpl extends NetworkControllerImpl {
         mMSimIconId = new int[numPhones];
         mMSimPhoneSignalIconId = new int[numPhones];
         mMSimDataTypeIconId = new int[numPhones];
+        mMSimDataRoamIconId = new int[numPhones];
         mNoMSimIconId = new int[numPhones];
         mMSimMobileActivityIconId = new int[numPhones];
         mMSimContentDescriptionPhoneSignal = new String[numPhones];
@@ -216,7 +218,7 @@ public class MSimNetworkControllerImpl extends NetworkControllerImpl {
     protected void registerPhoneStateListener(Context context) {
         // telephony
         mPhone = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
-        mSubIdPhoneIdMap = new HashMap<Long, Integer>();
+        mPhoneIdSubIdMapping = new SparseLongArray();
         mPhoneCount = TelephonyManager.getDefault().getPhoneCount();
         Slog.d(TAG, "registerPhoneStateListener: " + mPhoneCount);
         mMSimPhoneStateListener = new PhoneStateListener[mPhoneCount];
@@ -227,9 +229,8 @@ public class MSimNetworkControllerImpl extends NetworkControllerImpl {
                 Slog.d(TAG, "registerPhoneStateListener subId: " + subId);
                 Slog.d(TAG, "registerPhoneStateListener slotId: " + i);
                 if (subId > 0) {
-                    mSubIdPhoneIdMap.put(subId, i);
-                    mMSimPhoneStateListener[i] = getPhoneStateListener(subId,
-                            i);
+                    mPhoneIdSubIdMapping.put(i, subId);
+                    mMSimPhoneStateListener[i] = getPhoneStateListener(subId, i);
                     mPhone.listen(mMSimPhoneStateListener[i],
                             PhoneStateListener.LISTEN_SERVICE_STATE
                                     | PhoneStateListener.LISTEN_SIGNAL_STRENGTHS
@@ -286,6 +287,7 @@ public class MSimNetworkControllerImpl extends NetworkControllerImpl {
                 mMSimPhoneSignalIconId[phoneId],
                 mMSimMobileActivityIconId[phoneId],
                 mMSimDataTypeIconId[phoneId],
+                mMSimDataRoamIconId[phoneId],
                 mMSimContentDescriptionPhoneSignal[phoneId],
                 mMSimContentDescriptionDataType[phoneId],
                 phoneId,
@@ -297,6 +299,7 @@ public class MSimNetworkControllerImpl extends NetworkControllerImpl {
                     mAlwaysShowCdmaRssi ? mPhoneSignalIconId : mWimaxIconId,
                     mMSimMobileActivityIconId[phoneId],
                     mMSimDataTypeIconId[phoneId],
+                    mMSimDataRoamIconId[phoneId],
                     mContentDescriptionWimax,
                     mMSimContentDescriptionDataType[phoneId],
                     phoneId,
@@ -309,6 +312,7 @@ public class MSimNetworkControllerImpl extends NetworkControllerImpl {
                             : mMSimDataSignalIconId[phoneId],
                     mMSimMobileActivityIconId[phoneId],
                     mMSimDataTypeIconId[phoneId],
+                    mMSimDataRoamIconId[phoneId],
                     mMSimContentDescriptionPhoneSignal[phoneId],
                     mMSimContentDescriptionDataType[phoneId],
                     phoneId,
@@ -797,11 +801,17 @@ public class MSimNetworkControllerImpl extends NetworkControllerImpl {
                 }
             }
         } else if (isRoaming(phoneId)) {
-            mMSimDataTypeIconId[phoneId] = R.drawable.stat_sys_data_fully_connected_roam;
+            if (SystemProperties.getBoolean("ro.config.always_show_roaming", false)) {
+                mMSimDataRoamIconId[phoneId] = R.drawable.stat_sys_data_msim_roam;
+            } else {
+                mMSimDataTypeIconId[phoneId] = R.drawable.stat_sys_data_fully_connected_roam;
+            }
             setQSDataTypeIcon = true;
             if (phoneId == dataSub) {
                 mQSDataTypeIconId = R.drawable.stat_sys_data_fully_connected_roam;
             }
+        } else if (!isRoaming(phoneId)) {
+            mMSimDataRoamIconId[phoneId] = 0;
         }
 
         if (setQSDataTypeIcon && phoneId == dataSub) {
@@ -950,7 +960,11 @@ public class MSimNetworkControllerImpl extends NetworkControllerImpl {
                 something = true;
             }
         }
-        if (something) {
+        if (mPhoneIdSubIdMapping.indexOfKey(phoneId) >= 0) {
+            long sub = mPhoneIdSubIdMapping.get(phoneId);
+            SubInfoRecord sir = SubscriptionManager.getSubInfoForSubscriber(sub);
+            mMSimNetworkName[phoneId] = sir.displayName;
+        } else if (something) {
             mMSimNetworkName[phoneId] = str.toString();
         } else {
             mMSimNetworkName[phoneId] = mNetworkNameDefault;
@@ -1196,10 +1210,16 @@ public class MSimNetworkControllerImpl extends NetworkControllerImpl {
                     }
                 }
             } else if (isRoaming(phoneId)) {
-                mMSimDataTypeIconId[phoneId] = R.drawable.stat_sys_data_fully_connected_roam;
+                if (SystemProperties.getBoolean("ro.config.always_show_roaming", false)) {
+                    mMSimDataRoamIconId[phoneId] = R.drawable.stat_sys_data_msim_roam;
+                } else {
+                    mMSimDataTypeIconId[phoneId] = R.drawable.stat_sys_data_fully_connected_roam;
+                }
                 if (phoneId == dataSub) {
                     mQSDataTypeIconId = R.drawable.stat_sys_data_fully_connected_roam;
                 }
+            } else if (!isRoaming(phoneId)) {
+                mMSimDataRoamIconId[phoneId] = 0;
             }
         }
 
