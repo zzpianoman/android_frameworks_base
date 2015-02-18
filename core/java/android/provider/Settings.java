@@ -3214,6 +3214,54 @@ public final class Settings {
                 "mute_annoying_notifications_threshold";
 
         /**
+         * Color temperature of the display during the day
+         * @hide
+         */
+        public static final String DISPLAY_TEMPERATURE_DAY = "display_temperature_day";
+
+        /**
+         * Color temperature of the display at night
+         * @hide
+         */
+        public static final String DISPLAY_TEMPERATURE_NIGHT = "display_temperature_night";
+
+        /**
+         * Display color temperature adjustment mode, one of DAY (default), NIGHT, or AUTO.
+         * @hide
+         */
+        public static final String DISPLAY_TEMPERATURE_MODE = "display_temperature_mode";
+
+        /**
+         * Automatic outdoor mode
+         * @hide
+         */
+        public static final String DISPLAY_AUTO_OUTDOOR_MODE = "display_auto_outdoor_mode";
+
+        /**
+         * Use display power saving features such as CABC or CABL
+         * @hide
+         */
+        public static final String DISPLAY_LOW_POWER = "display_low_power";
+
+        /**
+         * Use color enhancement feature of display
+         * @hide
+         */
+        public static final String DISPLAY_COLOR_ENHANCE = "display_color_enhance";
+
+        /**
+         * Manual display color adjustments (RGB values as floats, separated by spaces)
+         * @hide
+         */
+        public static final String DISPLAY_COLOR_ADJUSTMENT = "display_color_adjustment";
+
+        /**
+         * Did we tell about how they can stop breaking their eyes?
+         * @hide
+         */
+        public static final String LIVE_DISPLAY_HINTED = "live_display_hinted";
+
+        /**
          * Settings to backup. This is here so that it's in the same place as the settings
          * keys and easy to update.
          *
@@ -3279,7 +3327,12 @@ public final class Settings {
             VIBRATE_WHEN_RINGING,
             RINGTONE,
             LOCK_TO_APP_ENABLED,
-            NOTIFICATION_SOUND
+            NOTIFICATION_SOUND,
+            DISPLAY_TEMPERATURE_NIGHT,
+            DISPLAY_TEMPERATURE_DAY,
+            DISPLAY_TEMPERATURE_MODE,
+            DISPLAY_AUTO_OUTDOOR_MODE,
+            LIVE_DISPLAY_HINTED
         };
 
         /**
@@ -5506,6 +5559,14 @@ public final class Settings {
          * @hide
          */
         public static final String QS_USE_MAIN_TILES = "sysui_qs_main_tiles";
+
+        /**
+         * Stored color matrix for LiveDisplay. This is used to allow co-existence with
+         * display tuning done by DisplayAdjustmentUtils when hardware support isn't
+         * available.
+         * @hide
+         */
+        public static final String LIVE_DISPLAY_COLOR_MATRIX = "live_display_color_matrix";
 
         /**
          * This are the settings to be backed up.
