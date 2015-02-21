@@ -171,8 +171,9 @@ public class ResourcesManager {
             Context context) {
         final float scale = compatInfo.applicationScale;
         final boolean isThemeable = compatInfo.isThemeable;
+        final ThemeConfig themeConfig = getThemeConfig();
         ResourcesKey key = new ResourcesKey(resDir, displayId, overrideConfiguration, scale,
-                isThemeable, token);
+                isThemeable, themeConfig, token);
         Resources r;
         synchronized (this) {
             // Resources is app scale dependent.
@@ -559,7 +560,7 @@ public class ResourcesManager {
             return false;
         }
 
-        String themePackageName = basePackageName;
+        String themePackageName = piTheme.packageName;
         String themePath = piTheme.applicationInfo.publicSourceDir;
         if (!piTarget.isThemeApk && piTheme.mOverlayTargets.contains(basePackageName)) {
             String targetPackagePath = piTarget.applicationInfo.sourceDir;
@@ -572,7 +573,7 @@ public class ResourcesManager {
                     targetPackagePath, prefixPath);
 
             if (cookie != 0) {
-                assets.setThemePackageName(basePackageName);
+                assets.setThemePackageName(themePackageName);
                 assets.addThemeCookie(cookie);
             }
         }
@@ -720,5 +721,13 @@ public class ResourcesManager {
         }
         assets.getThemeCookies().clear();
         assets.setThemePackageName(null);
+    }
+
+    private ThemeConfig getThemeConfig() {
+        Configuration config = getConfiguration();
+        if (config != null) {
+            return config.themeConfig;
+        }
+        return null;
     }
 }
