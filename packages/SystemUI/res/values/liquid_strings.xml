@@ -21,5 +21,7 @@
     <!-- Quick settings -->
     <string name="quick_settings_screen_off">Screen off</string>
     <string name="quick_settings_screenshot">Screenshot</string>
+    <string name="quick_settings_reboot_label">Reboot</string>
+    <string name="quick_settings_reboot_recovery_label">Recovery</string>
 
 </resources>
