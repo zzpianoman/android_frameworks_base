@@ -551,7 +551,21 @@ public class ActivityManager {
      */
     static public int getMaxRecentTasksStatic() {
         if (gMaxRecentTasks < 0) {
-            return gMaxRecentTasks = isLowRamDeviceStatic() ? 50 : 100;
+	    // add system property to configure max number of recents to keep. If
+	    // prop value is -1, >98 or doesn't exist, use system default.
+	    int configMaxRecents = SystemProperties.getInt("ro.config.max_recents", -1);
+	    if (configMaxRecents >= 0) {
+	        configMaxRecents = configMaxRecents + 2;
+	    } else {
+	        configMaxRecents = -1;
+	    }
+
+	    if ((configMaxRecents >= 2) && (configMaxRecents <= 100)) {
+		return gMaxRecentTasks = configMaxRecents;
+	    } else {
+		return gMaxRecentTasks = isLowRamDeviceStatic() ? 50 : 100;
+	    }
+            
         }
         return gMaxRecentTasks;
     }
