@@ -402,12 +402,12 @@ public class ThemeService extends IThemeService.Stub {
         }
 
         if (request.getAlarmThemePackageName() != null) {
-            updateNotifications(request.getAlarmThemePackageName());
+            updateAlarms(request.getAlarmThemePackageName());
             incrementProgress(progressIncrement);
         }
 
         if (request.getRingtoneThemePackageName() != null) {
-            updateNotifications(request.getRingtoneThemePackageName());
+            updateRingtones(request.getRingtoneThemePackageName());
             incrementProgress(progressIncrement);
         }
         Environment.setUserRequired(true);
@@ -771,7 +771,7 @@ public class ThemeService extends IThemeService.Stub {
             }
         }
 
-        builder.setThemeChangeTimestamp(System.currentTimeMillis());
+        builder.setLastThemeChangeRequestType(request.getReqeustType());
 
         return builder;
     }

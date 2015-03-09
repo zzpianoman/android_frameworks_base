@@ -53,6 +53,7 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.res.Configuration;
+import android.content.res.ThemeChangeRequest.RequestType;
 import android.content.res.ThemeConfig;
 import android.content.res.Resources;
 import android.database.ContentObserver;
@@ -439,8 +440,6 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
                     Settings.System.STATUS_BAR_CLOCK), false, this, UserHandle.USER_ALL);
             resolver.registerContentObserver(Settings.System.getUriFor(
                     Settings.System.NAVBAR_LEFT_IN_LANDSCAPE), false, this, UserHandle.USER_ALL);
-            resolver.registerContentObserver(Settings.System.getUriFor(
-                    Settings.System.STATUS_BAR_CLOCK), false, this);
             resolver.registerContentObserver(Settings.Secure.getUriFor(
                     Settings.Secure.RECENTS_LONG_PRESS_ACTIVITY), false, this);
             update();
@@ -880,7 +879,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
                 com.android.internal.R.integer.config_screenBrightnessDim);
 
         updateDisplaySize(); // populates mDisplayMetrics
-        updateResources();
+        updateResources(null);
 
         mIconSize = res.getDimensionPixelSize(com.android.internal.R.dimen.status_bar_icon_size);
 
@@ -1065,7 +1064,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
 
         // Other icons
         mLocationController = new LocationControllerImpl(mContext); // will post a notification
-        mBatteryController = new BatteryController(mContext);
+        mBatteryController = new BatteryController(mContext, mHandler);
         mBatteryController.addStateChangedCallback(new BatteryStateChangeCallback() {
             @Override
             public void onPowerSaveChanged() {
@@ -1076,6 +1075,10 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
             }
             @Override
             public void onBatteryLevelChanged(int level, boolean pluggedIn, boolean charging) {
+                // noop
+            }
+            @Override
+            public void onBatteryStyleChanged(int style, int percentMode) {
                 // noop
             }
         });
@@ -1091,7 +1094,9 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
         mCastController = new CastControllerImpl(mContext);
 
         if (isMSim()) {
-            mMSimNetworkController = new MSimNetworkControllerImpl(mContext);
+            if (mMSimNetworkController == null) {
+                mMSimNetworkController = new MSimNetworkControllerImpl(mContext, mHandler);
+            }
             MSimSignalClusterView signalCluster = (MSimSignalClusterView)
                     mStatusBarView.findViewById(R.id.msim_signal_cluster);
             MSimSignalClusterView signalClusterKeyguard = (MSimSignalClusterView)
@@ -1129,7 +1134,9 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
                 //});
             }
         } else {
-            mNetworkController = new NetworkControllerImpl(mContext);
+            if (mNetworkController == null) {
+                mNetworkController = new NetworkControllerImpl(mContext);
+            }
             final SignalClusterView signalCluster =
                 (SignalClusterView)mStatusBarView.findViewById(R.id.signal_cluster);
             final SignalClusterView signalClusterKeyguard =
@@ -1186,7 +1193,6 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
                 (ViewStub) mStatusBarWindowContent.findViewById(R.id.keyguard_user_switcher),
                 mKeyguardStatusBar, mNotificationPanel, mUserSwitcherController);
 
-
         // Set up the quick settings tile panel
         mQSPanel = (QSPanel) mStatusBarWindowContent.findViewById(R.id.quick_settings_panel);
         if (mQSPanel != null) {
@@ -1215,6 +1221,10 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
                     mQSPanel.setTiles(qsh.getTiles());
                 }
             });
+        }
+
+        if (mStatusBarWindowManager != null) {
+            mStatusBarWindowManager.setKeyguardMonitor(mKeyguardMonitor);
         }
 
         // User info. Trigger first load.
@@ -3501,7 +3511,8 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
     private void addStatusBarWindow() {
         makeStatusBarView();
         mStatusBarWindow.addContent(mStatusBarWindowContent);
-        mStatusBarWindowManager = new StatusBarWindowManager(mContext, mKeyguardMonitor);
+        mStatusBarWindowManager = new StatusBarWindowManager(mContext);
+        mStatusBarWindowManager.setKeyguardMonitor(mKeyguardMonitor);
         mStatusBarWindowManager.add(mStatusBarWindow, getStatusBarHeight());
     }
 
@@ -3673,7 +3684,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
         }
         updateDisplaySize(); // populates mDisplayMetrics
 
-        updateResources();
+        updateResources(newConfig);
         updateClockSize();
         repositionNavigationBar();
         updateExpandedViewPos(EXPANDED_LEAVE_ALONE);
@@ -3696,6 +3707,12 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
     private void setControllerUsers() {
         if (mZenModeController != null) {
             mZenModeController.setUserId(mCurrentUserId);
+        }
+        if (mMSimNetworkController != null) {
+            mMSimNetworkController.setUserId(mCurrentUserId);
+        }
+        if (mBatteryController != null) {
+            mBatteryController.setUserId(mCurrentUserId);
         }
     }
 
@@ -3739,9 +3756,9 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
         mRecreating = true;
 
         if (mMSimNetworkController != null) {
-            mContext.unregisterReceiver(mMSimNetworkController);
+            mMSimNetworkController.removeAllSignalClusters();
         } else if (mNetworkController != null) {
-            mContext.unregisterReceiver(mNetworkController);
+            mNetworkController.removeAllSignalClusters();
         }
 
         removeHeadsUpView();
@@ -3772,6 +3789,8 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
         // Halts the old ticker. A new ticker is created in makeStatusBarView() so
         // this MUST happen before makeStatusBarView();
         haltTicker();
+
+        mKeyguardMonitor.removeCallbacks();
 
         makeStatusBarView();
         repositionNavigationBar();
@@ -3846,14 +3865,12 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
      * should, but getting that smooth is tough.  Someday we'll fix that.  In the
      * meantime, just update the things that we know change.
      */
-    void updateResources() {
+    void updateResources(Configuration newConfig) {
         final Context context = mContext;
-        final Resources res = context.getResources();
 
         // detect theme change.
-        ThemeConfig newTheme = res.getConfiguration().themeConfig;
-        if (newTheme != null &&
-                (mCurrentTheme == null || !mCurrentTheme.equals(newTheme))) {
+        ThemeConfig newTheme = newConfig != null ? newConfig.themeConfig : null;
+        if (shouldUpdateStatusbar(mCurrentTheme, newTheme)) {
             mCurrentTheme = (ThemeConfig)newTheme.clone();
             recreateStatusBar();
         } else {
@@ -3883,6 +3900,25 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
             mNavigationBarView.updateResources(getNavbarThemedResources());
             updateSearchPanel();
         }
+    }
+
+    /**
+     * Determines if we need to recreate the status bar due to a theme change.  We currently
+     * check if the overlay for the status bar, fonts, or icons, or forced update count have
+     * changed.
+     *
+     * @param oldTheme
+     * @param newTheme
+     * @return True if we should recreate the status bar
+     */
+    private boolean shouldUpdateStatusbar(ThemeConfig oldTheme, ThemeConfig newTheme) {
+        return newTheme != null && (oldTheme == null || !newTheme.getOverlayForStatusBar()
+                .equals(oldTheme.getOverlayForStatusBar()) ||
+                !newTheme.getFontPkgName()
+                        .equals(oldTheme.getFontPkgName()) ||
+                !newTheme.getIconPackPkgName()
+                        .equals(oldTheme.getIconPackPkgName()) ||
+                newTheme.getLastThemeChangeRequestType() == RequestType.THEME_UPDATED);
     }
 
     private void updateClockSize() {
