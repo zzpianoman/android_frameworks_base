@@ -46,6 +46,9 @@
     <string name="accessibility_dpad_left">Cursor left</string>
     <string name="accessibility_dpad_right">Cursor right</string>
 
+    <!-- Content description of the superuser tile -->
+    <string name="accessibility_su_active">Superuser session active</string>
+
     <!-- QuickSettings: Mobile data [CHAR LIMIT=NONE] -->
     <string name="quick_settings_mobile_data_label">Mobile data</string>
     <!-- QuickSettings: Roaming [CHAR LIMIT=NONE] -->
