@@ -36,6 +36,10 @@ LOCAL_C_INCLUDES := \
 
 LOCAL_CFLAGS += -Wall -Werror -Wunused -Wunreachable-code
 
+ifeq ($(TARGET_DISABLE_CURSOR_LAYER),true)
+	LOCAL_CFLAGS += -DDISABLE_CURSOR_LAYER
+endif
+
 LOCAL_MODULE:= libinputservice
 
 LOCAL_MODULE_TAGS := optional
