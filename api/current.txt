@@ -29062,6 +29062,7 @@ package android.test.mock {
     method public android.database.sqlite.SQLiteDatabase openOrCreateDatabase(java.lang.String, int, android.database.sqlite.SQLiteDatabase.CursorFactory);
     method public android.database.sqlite.SQLiteDatabase openOrCreateDatabase(java.lang.String, int, android.database.sqlite.SQLiteDatabase.CursorFactory, android.database.DatabaseErrorHandler);
     method public android.graphics.drawable.Drawable peekWallpaper();
+    method public void recreateTheme();
     method public android.content.Intent registerReceiver(android.content.BroadcastReceiver, android.content.IntentFilter);
     method public android.content.Intent registerReceiver(android.content.BroadcastReceiver, android.content.IntentFilter, java.lang.String, android.os.Handler);
     method public void removeStickyBroadcast(android.content.Intent);
