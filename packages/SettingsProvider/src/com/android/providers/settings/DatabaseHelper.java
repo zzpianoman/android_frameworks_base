@@ -77,7 +77,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     // database gets upgraded properly. At a minimum, please confirm that 'upgradeVersion'
     // is properly propagated through your change.  Not doing so will result in a loss of user
     // settings.
-    private static final int DATABASE_VERSION = 124;
+    private static final int DATABASE_VERSION = 125;
 
     private Context mContext;
     private int mUserHandle;
@@ -1939,7 +1939,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 stmt = db.compileStatement("INSERT OR IGNORE INTO secure(name,value)"
                         + " VALUES(?,?);");
                 loadBooleanSetting(stmt, Secure.ADVANCED_MODE,
-                        R.bool.def_advanced_mode);
+                        com.android.internal.R.bool.config_advancedSettingsMode);
                 db.setTransactionSuccessful();
             } finally {
                 db.endTransaction();
@@ -1984,6 +1984,26 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 if (stmt != null) stmt.close();
             }
             upgradeVersion = 124;
+        }
+
+        if (upgradeVersion < 125) {
+            // Force enable advanced settings if the overlay defaults to true
+            if (mContext.getResources().getBoolean(
+                    com.android.internal.R.bool.config_advancedSettingsMode)) {
+                db.beginTransaction();
+                SQLiteStatement stmt = null;
+                try {
+                    stmt = db.compileStatement("INSERT OR REPLACE INTO secure(name,value)"
+                            + " VALUES(?,?);");
+                    loadBooleanSetting(stmt, Secure.ADVANCED_MODE,
+                            com.android.internal.R.bool.config_advancedSettingsMode);
+                    db.setTransactionSuccessful();
+                } finally {
+                    db.endTransaction();
+                    if (stmt != null) stmt.close();
+                }
+            }
+            upgradeVersion = 125;
         }
 
         // *** Remember to update DATABASE_VERSION above!
@@ -2482,8 +2502,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             loadIntegerSetting(stmt, Settings.System.STATUS_BAR_BATTERY_STYLE,
                     R.integer.def_battery_style);
 
+            loadIntegerSetting(stmt, Settings.System.ENABLE_FORWARD_LOOKUP,
+                    R.integer.def_forward_lookup);
+
             loadIntegerSetting(stmt, Settings.System.ENABLE_PEOPLE_LOOKUP,
                     R.integer.def_people_lookup);
+
+            loadIntegerSetting(stmt, Settings.System.ENABLE_REVERSE_LOOKUP,
+                    R.integer.def_reverse_lookup);
 
             loadIntegerSetting(stmt, Settings.System.QS_QUICK_PULLDOWN,
                     R.integer.def_qs_quick_pulldown);
@@ -2633,7 +2659,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     R.bool.def_cm_stats_collection);
 
             loadBooleanSetting(stmt, Settings.Secure.ADVANCED_MODE,
-                    R.bool.def_advanced_mode);
+                    com.android.internal.R.bool.config_advancedSettingsMode);
 
             loadDefaultThemeSettings(stmt);
             loadProtectedSmsSetting(stmt);
@@ -2795,20 +2821,29 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
             // Set the preferred network mode to target desired value or Default
             // value defined in RILConstants
-            int type;
-            int phoneCount = TelephonyManager.getDefault().getPhoneCount();
-            type = SystemProperties.getInt("ro.telephony.default_network",
-                        RILConstants.PREFERRED_NETWORK_MODE);
-            String val = Integer.toString(type);
-            for (int phoneId = 1; phoneId < phoneCount; phoneId++) {
-                val = val + "," + type;
+            final String defVal = SystemProperties.get("ro.telephony.default_network", "");
+            final String[] defNetworkSettings = defVal.split(",");
+            final int phoneCount = TelephonyManager.getDefault().getPhoneCount();
+            final String[] networkSettings = new String[phoneCount];
+            boolean error = defNetworkSettings.length != phoneCount;
+            for (int i = 0; i < phoneCount; i++) {
+                try {
+                    networkSettings[i] = String.valueOf(Integer.parseInt(defNetworkSettings[i]));
+                } catch (NumberFormatException ex) {
+                    networkSettings[i] = String.valueOf(RILConstants.PREFERRED_NETWORK_MODE);
+                    error = true;
+                }
             }
-
-            loadSetting(stmt, Settings.Global.PREFERRED_NETWORK_MODE, val);
+            if (error) {
+                Log.w(TAG, "Wrong ro.telephony.default_network setting " + defVal
+                        + ". Fallback to defaults");
+            }
+            loadSetting(stmt, Settings.Global.PREFERRED_NETWORK_MODE, TextUtils.join(",",
+                    networkSettings));
 
             // Set the preferred cdma subscription source to target desired value or default
             // value defined in CdmaSubscriptionSourceManager
-            type = SystemProperties.getInt("ro.telephony.default_cdma_sub",
+            int type = SystemProperties.getInt("ro.telephony.default_cdma_sub",
                         CdmaSubscriptionSourceManager.PREFERRED_CDMA_SUBSCRIPTION);
             loadSetting(stmt, Settings.Global.CDMA_SUBSCRIPTION_MODE, type);
 
