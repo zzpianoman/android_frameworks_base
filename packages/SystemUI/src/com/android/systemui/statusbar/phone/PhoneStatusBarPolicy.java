@@ -33,6 +33,7 @@ import android.os.Handler;
 import android.os.storage.StorageEventListener;
 import android.os.storage.StorageManager;
 import android.os.storage.StorageVolume;
+import android.os.SystemProperties;
 import android.os.UserHandle;
 import android.provider.Settings;
 import android.provider.Settings.Global;
@@ -395,7 +396,10 @@ public class PhoneStatusBarPolicy {
     }
 
     private void updateSu() {
-        mService.setIconVisibility(SLOT_SU, mSuController.hasActiveSessions());
+	if (SystemProperties.getInt("ro.appops.su_indicator", 1) == 0) {
+            return;
+        }  
+	mService.setIconVisibility(SLOT_SU, mSuController.hasActiveSessions());
     }
 
     private final CastController.Callback mCastCallback = new CastController.Callback() {
