@@ -184,6 +184,12 @@ final class ProcessList {
             73728, 92160, 110592,
             129024, 147456, 184320
     };
+    // Custom OOM level limits for Tuna. 
+    // TO DO: Open this up to system prop key to choose specific OOM values
+    private final int[] mOomMinFreeTuna = new int[] {
+            20508, 30273, 70313,
+            82031, 93750, 193359
+    };    
     // The actual OOM killer memory levels we are using.
     private final int[] mOomMinFree = new int[mOomAdj.length];
 
@@ -250,7 +256,11 @@ final class ProcessList {
                 if (i == 4) high = (high*3)/2;
                 else if (i == 5) high = (high*7)/4;
             }
-            mOomMinFree[i] = (int)(low + ((high-low)*scale));
+            if (SystemProperties.get("ro.product.board").equals("tuna")) {
+                mOomMinFree[i] = mOomMinFreeTuna[i];
+            } else {
+                mOomMinFree[i] = (int)(low + ((high-low)*scale));
+            }
         }
 
         if (minfree_abs >= 0) {
