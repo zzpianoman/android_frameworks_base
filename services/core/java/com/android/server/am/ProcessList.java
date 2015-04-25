@@ -222,6 +222,12 @@ final class ProcessList {
             73728, 92160, 110592,
             129024, 147456, 184320
     };
+    // Custom OOM level limits for Tuna. 
+    // TO DO: Open this up to system prop key to choose specific OOM values
+    private final int[] mOomMinFreeTuna = new int[] {
+            11264, 31744, 129024,
+            156672, 227328, 313344
+    };    
     // The actual OOM killer memory levels we are using.
     private final int[] mOomMinFree = new int[mOomAdj.length];
     // Optimal OOM killer memory levels for Low-Tier devices.
@@ -293,8 +299,9 @@ final class ProcessList {
         for (int i=0; i<mOomAdj.length; i++) {
             int low = 0;
             int high = 0;
-
-            if (is64bit) {
+	    if (SystemProperties.get("ro.product.board").equals("tuna")) {
+		mOomMinFree[i] = mOomMinFreeTuna[i];
+	    } else if (is64bit) {
                 // On 64 bit devices, we consume more baseline RAM, because 64 bit is cool!
                 // To avoid being all pagey and stuff, scale up the memory levels to
                 // give us some breathing room.
