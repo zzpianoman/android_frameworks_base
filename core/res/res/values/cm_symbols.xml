@@ -37,4 +37,6 @@
     <java-symbol type="integer" name="config_nightColorTemperature" />
     <java-symbol type="integer" name="config_outdoorAmbientLux" />
 
+    <java-symbol type="string" name="custom_tile_listener_binding_label" />
+
 </resources>
