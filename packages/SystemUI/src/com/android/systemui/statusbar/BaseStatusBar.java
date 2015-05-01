@@ -1814,6 +1814,9 @@ public abstract class BaseStatusBar extends SystemUI implements
                 sbn.getId() == com.android.internal.R.string.privacy_guard_notification) {
             return false;
         }
+        if (Notification.PRIVACY_GUARD_NOTIFICATION.equals(sbn.getTag())) {
+            return false;
+        }
         // retrieve per app visibility setting
         final int showOnKeyguard = mNoMan.getShowNotificationForPackageOnKeyguard(
                 pkgName, sbn.getUid());
