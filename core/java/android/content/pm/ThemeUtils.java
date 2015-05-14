@@ -120,7 +120,8 @@ public class ThemeUtils {
     // Actions in manifests which identify legacy icon packs
     public static final String[] sSupportedActions = new String[] {
             "org.adw.launcher.THEMES",
-            "com.gau.go.launcherex.theme"
+            "com.gau.go.launcherex.theme",
+            "com.novalauncher.THEME"
     };
 
     // Categories in manifests which identify legacy icon packs
@@ -512,7 +513,7 @@ public class ThemeUtils {
         try {
             Context uiContext = context.createPackageContext("com.android.systemui",
                     Context.CONTEXT_RESTRICTED);
-            return new ThemedUiContext(uiContext, context.getPackageName());
+            return new ThemedUiContext(uiContext, context.getApplicationContext());
         } catch (PackageManager.NameNotFoundException e) {
         }
 
@@ -574,16 +575,21 @@ public class ThemeUtils {
     }
 
     private static class ThemedUiContext extends ContextWrapper {
-        private String mPackageName;
+        private Context mAppContext;
 
-        public ThemedUiContext(Context context, String packageName) {
+        public ThemedUiContext(Context context, Context appContext) {
             super(context);
-            mPackageName = packageName;
+            mAppContext = appContext;
+        }
+
+        @Override
+        public Context getApplicationContext() {
+            return mAppContext;
         }
 
         @Override
         public String getPackageName() {
-            return mPackageName;
+            return mAppContext.getPackageName();
         }
     }
 

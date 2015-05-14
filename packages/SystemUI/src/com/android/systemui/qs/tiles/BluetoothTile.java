@@ -32,6 +32,7 @@ import com.android.systemui.qs.QSDetailItemsList;
 import com.android.systemui.qs.QSTile;
 import com.android.systemui.statusbar.policy.BluetoothController;
 import com.android.systemui.statusbar.policy.BluetoothController.PairedDevice;
+import cyanogenmod.app.StatusBarPanelCustomTile;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -191,6 +192,11 @@ public class BluetoothTile extends QSTile<QSTile.BooleanState>  {
         }
 
         @Override
+        public StatusBarPanelCustomTile getCustomTile() {
+            return null;
+        }
+
+        @Override
         public void setToggleState(boolean state) {
             mController.setBluetoothEnabled(state);
             showDetail(false);
@@ -204,6 +210,7 @@ public class BluetoothTile extends QSTile<QSTile.BooleanState>  {
             listView.setOnItemClickListener(this);
             listView.setAdapter(mAdapter =
                     new QSDetailItemsList.QSDetailListAdapter(context, mBluetoothItems));
+            mAdapter.setCallback(this);
             mItemsList.setEmptyState(R.drawable.ic_qs_bluetooth_detail_empty,
                     R.string.quick_settings_bluetooth_detail_empty_text);
 
