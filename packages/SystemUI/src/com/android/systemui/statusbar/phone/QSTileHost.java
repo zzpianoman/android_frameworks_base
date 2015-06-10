@@ -41,6 +41,7 @@ import com.android.systemui.qs.tiles.AdbOverNetworkTile;
 import com.android.systemui.qs.tiles.AirplaneModeTile;
 import com.android.systemui.qs.tiles.AmbientDisplayTile;
 import com.android.systemui.qs.tiles.ApnTile;
+import com.android.systemui.qs.tiles.BatteryReserveTile;
 import com.android.systemui.qs.tiles.BluetoothTile;
 import com.android.systemui.qs.tiles.CastTile;
 import com.android.systemui.qs.tiles.CellularTile;
@@ -369,6 +370,8 @@ public class QSTileHost implements QSTile.Host {
                 return new ScreenOffTile(this);
             case QSConstants.TILE_REBOOT:
                 return new RebootTile(this);
+            case QSConstants.TILE_BATTERY_RESERVE:
+                return new BatteryReserveTile(this);
             default:
                 throw new IllegalArgumentException("Bad tile spec: " + tileSpec);
         }
