@@ -27,17 +27,22 @@ import android.content.res.Configuration;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Point;
 import android.os.Handler;
 import android.os.PowerManager;
+import android.os.SystemProperties;
 import android.os.UserHandle;
 import android.provider.Settings;
 import android.util.AttributeSet;
 import android.util.MathUtils;
+import android.view.Display;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
+import android.view.Surface;
 import android.view.VelocityTracker;
 import android.view.View;
 import android.view.ViewTreeObserver;
+import android.view.WindowManager;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.animation.AnimationUtils;
 import android.view.animation.Interpolator;
@@ -293,6 +298,16 @@ public class NotificationPanelView extends PanelView implements
     public void updateResources() {
         int panelWidth = getResources().getDimensionPixelSize(R.dimen.notification_panel_width);
         int panelGravity = getResources().getInteger(R.integer.notification_panel_layout_gravity);
+        if (SystemProperties.getInt("ro.notif_expand_landscape", 0) == 1) {
+            final Display display = ((WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
+            int rotation = display.getRotation();
+            Point size = new Point();
+            display.getSize(size);
+            if ((rotation == Surface.ROTATION_90) || (rotation == Surface.ROTATION_270)) {
+                panelWidth = size.x;
+            }
+        }
+
         FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) mHeader.getLayoutParams();
         if (lp.width != panelWidth) {
             lp.width = panelWidth;
