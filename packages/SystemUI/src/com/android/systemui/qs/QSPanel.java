@@ -25,10 +25,14 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.Handler;
 import android.os.Message;
+import android.os.SystemProperties;
 import android.util.AttributeSet;
+import android.view.Display;
 import android.view.LayoutInflater;
+import android.view.Surface;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.view.accessibility.AccessibilityEvent;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -146,7 +150,15 @@ public class QSPanel extends ViewGroup {
 
     public void updateResources() {
         final Resources res = mContext.getResources();
-        final int columns = Math.max(1, res.getInteger(R.integer.quick_settings_num_columns));
+        int numColumns = res.getInteger(R.integer.quick_settings_num_columns);
+        if (SystemProperties.getInt("ro.notif_expand_landscape", 0) == 1) {
+            final Display display = ((WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
+            int rotation = display.getRotation();
+            if ((rotation == Surface.ROTATION_90) || (rotation == Surface.ROTATION_270)) {
+	        numColumns = res.getInteger(R.integer.quick_settings_num_columns_landscape);
+            }
+        }
+        final int columns = Math.max(1, numColumns);
         mCellHeight = res.getDimensionPixelSize(R.dimen.qs_tile_height);
         mCellWidth = (int)(mCellHeight * TILE_ASPECT);
         mLargeCellHeight = res.getDimensionPixelSize(R.dimen.qs_dual_tile_height);
