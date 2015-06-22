@@ -1058,6 +1058,9 @@ public final class SystemServer {
             reportWtf("making Display Manager Service ready", e);
         }
 
+        // Update sysfs parameters for lowmemorykiller whitelist module
+        mPackageManager.updateDoNotKill();
+
         // These are needed to propagate to the runnable below.
         final MountService mountServiceF = mountService;
         final NetworkManagementService networkManagementF = networkManagement;

@@ -5313,6 +5313,12 @@ public final class Settings {
         public static final String ADVANCED_REBOOT = "advanced_reboot";
 
         /**
+         * List of do-not-kill process names
+         * @hide
+         */
+        public static final String DONOTKILL_PROC = "donotkill_proc_names";
+
+        /**
          * Whether developer settings dare enabled.
          * @hide
          */
