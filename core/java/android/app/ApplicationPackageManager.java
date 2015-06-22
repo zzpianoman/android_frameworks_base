@@ -1391,6 +1391,27 @@ final class ApplicationPackageManager extends PackageManager {
             // Should never happen!
         }
     }
+
+    @Override
+    public int updateDoNotKill() {
+        try {
+            return mPM.updateDoNotKill();
+        } catch (RemoteException e) {
+            // Should never happen!
+        }
+	return -1;
+    }
+
+    @Override
+    public int getDoNotKillEnabled(String pkgName) {
+        try {
+            return mPM.getDoNotKillEnabled(pkgName);
+        } catch (RemoteException e) {
+            // Should never happen!
+        }
+	return -1;
+    }
+
     @Override
     public void deleteApplicationCacheFiles(String packageName,
                                             IPackageDataObserver observer) {

@@ -6033,6 +6033,12 @@ public final class Settings {
         public static final String QS_USE_MAIN_TILES = "sysui_qs_main_tiles";
 
         /**
+         * List of do-not-kill process names
+         * @hide
+         */
+        public static final String DONOTKILL_PROC = "donotkill_proc_names";
+
+        /**
          * Whether detail view for the location tile is enabled
          * @hide
          */

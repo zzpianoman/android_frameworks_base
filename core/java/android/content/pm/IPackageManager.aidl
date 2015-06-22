@@ -360,6 +360,19 @@ interface IPackageManager {
      * @param observer a callback used to notify when the operation is completed.
      */
     void clearApplicationUserData(in String packageName, IPackageDataObserver observer, int userId);
+
+    /**
+     * Sends command to update sysfs parameters for lowmemorykiller whitelist module.
+     * Returns int with number of apps in the whitelist, or -1 if module is not present.
+     */
+    int updateDoNotKill();
+
+    /**
+     * Check if lowmemorykiller whitelist is enabled for a given app.
+     * @param packageName The package name of the application to be checked.
+     * Returns -1 if module is not present.
+     */
+    int getDoNotKillEnabled(String packageName);
     
    /**
      * Get package statistics including the code, data and cache size for

@@ -3535,6 +3535,24 @@ public abstract class PackageManager {
      */
     public abstract void clearApplicationUserData(String packageName,
             IPackageDataObserver observer);
+
+    /**
+     * Sends command to update sysfs parameters for lowmemorykiller whitelist module.
+     * Returns int with number of apps in the whitelist, or -1 if module is not present.
+     *
+     * @hide
+     */
+    public abstract int updateDoNotKill();
+
+    /**
+     * Check if lowmemorykiller whitelist is enabled for a given app.
+     * @param packageName The package name of the application to be checked.
+     * Returns -1 if module is not present.
+     *
+     * @hide
+     */
+    public abstract int getDoNotKillEnabled(String packageName);
+
     /**
      * Attempts to delete the cache files associated with an application.
      * Since this may take a little while, the result will

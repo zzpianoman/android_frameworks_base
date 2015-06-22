@@ -531,6 +531,22 @@ public class MockPackageManager extends PackageManager {
      * @hide - to match hiding in superclass
      */
     @Override
+    public int updateDoNotKill() {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * @hide - to match hiding in superclass
+     */
+    @Override
+    public int getDoNotKillEnabled(String packageName) {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * @hide - to match hiding in superclass
+     */
+    @Override
     public void deleteApplicationCacheFiles(
             String packageName, IPackageDataObserver observer) {
         throw new UnsupportedOperationException();

@@ -1217,6 +1217,8 @@ public final class SystemServer {
                 reportWtf("making Gesture Sensor Service ready", e);
             }
         }
+        // Update sysfs parameters for lowmemorykiller whitelist module
+        mPackageManager.updateDoNotKill();
 
         IntentFilter filter = new IntentFilter();
         filter.addAction(Intent.ACTION_APP_FAILURE);

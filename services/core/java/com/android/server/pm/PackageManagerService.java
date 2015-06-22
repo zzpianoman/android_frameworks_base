@@ -105,6 +105,7 @@ import android.app.usage.UsageStats;
 import android.app.usage.UsageStatsManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.IIntentReceiver;
 import android.content.Intent;
@@ -219,6 +220,7 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.ByteBuffer;
@@ -236,6 +238,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -12208,7 +12211,143 @@ public class PackageManagerService extends IPackageManager.Stub {
             }
         }
 
+        //Check if present in lowmemorykiller whitelist and remove
+        cleanupDoNotKill(packageName);
+
         return ret;
+    }
+
+    @Override
+    public int updateDoNotKill() {
+        int ret = -1;
+        String DONOTKILL_PROC_NAMES = "/sys/module/lowmemorykiller/parameters/donotkill_proc_names";
+        String DONOTKILL_PROC_ENABLE = "/sys/module/lowmemorykiller/parameters/donotkill_proc";
+        String DONOTKILL_SYSPROC_NAMES = "/sys/module/lowmemorykiller/parameters/donotkill_sysproc_names";
+        String DONOTKILL_SYSPROC_ENABLE = "/sys/module/lowmemorykiller/parameters/donotkill_sysproc";
+
+        //If one of the parameters files does not exist, assume none of them do and exit
+        File file = new File(DONOTKILL_PROC_ENABLE);
+        if (!file.exists()) {
+            return ret;
+        }
+        ret = 0;
+        String order = Secure.getString(mContext.getContentResolver(),
+				android.provider.Settings.Secure.DONOTKILL_PROC);
+        if (order == null) {
+            Secure.putString(mContext.getContentResolver(), android.provider.Settings.Secure.DONOTKILL_PROC, "");
+            order = Secure.getString(mContext.getContentResolver(), android.provider.Settings.Secure.DONOTKILL_PROC);
+        }
+        List<String> mPackageNames = new LinkedList<String>(Arrays.asList(order.split(",")));
+        StringBuilder packageListSystemApps = new StringBuilder();
+        StringBuilder packageListUserApps = new StringBuilder();
+        if (order != null && order.length() > 0) {
+            for (String s : mPackageNames) {
+                PackageParser.Package pkg = mPackages.get(s);
+                if (isSystemApp(pkg)) {
+                    if (packageListSystemApps.length() > 0) {
+                        packageListSystemApps.append(",");
+                    }
+                    packageListSystemApps.append(s);
+                } else {
+                    if (packageListUserApps.length() > 0) {
+                        packageListUserApps.append(",");
+                    }
+                    packageListUserApps.append(s);
+                }
+                ret++;
+            }
+        }
+
+        if (packageListSystemApps.length() == 0) {
+            packageListSystemApps.append(" ");
+        }
+        if (packageListUserApps.length() == 0) {
+            packageListUserApps.append(" ");
+        }
+
+        try {
+            FileOutputStream fos = new FileOutputStream(DONOTKILL_SYSPROC_NAMES);
+            final PrintStream printStream = new PrintStream(fos);
+            printStream.print(packageListSystemApps.toString());
+            printStream.close();
+        } catch (Exception e) {
+            // fail silently
+        }
+        try {
+            FileOutputStream fos = new FileOutputStream(DONOTKILL_PROC_NAMES);
+            final PrintStream printStream = new PrintStream(fos);
+            printStream.print(packageListUserApps.toString());
+            printStream.close();
+        } catch (Exception e) {
+            // fail silently
+        }
+        try {
+            FileOutputStream fos = new FileOutputStream(DONOTKILL_SYSPROC_ENABLE);
+            byte[] bytes = new byte[2];
+            bytes[0] = (byte)(packageListSystemApps.length() > 1 ? '1' : '0');
+            bytes[1] = '\n';
+            fos.write(bytes);
+            fos.close();
+        } catch (Exception e) {
+            // fail silently
+        }
+        try {
+            FileOutputStream fos = new FileOutputStream(DONOTKILL_PROC_ENABLE);
+            byte[] bytes = new byte[2];
+            bytes[0] = (byte)(packageListUserApps.length() > 1 ? '1' : '0');
+            bytes[1] = '\n';
+            fos.write(bytes);
+            fos.close();
+        } catch (Exception e) {
+            // fail silently
+        }
+        return ret;
+    }
+
+    @Override
+    public int getDoNotKillEnabled(String packageName) {
+        int ret = -1;
+        String DONOTKILL_PROC_ENABLE = "/sys/module/lowmemorykiller/parameters/donotkill_proc";
+        //If file does not exist, assume module is not present
+        File file = new File(DONOTKILL_PROC_ENABLE);
+        if (!file.exists()) {
+            return ret;
+        }
+        ContentResolver resolver = mContext.getContentResolver();
+        String order = Secure.getString(resolver, android.provider.Settings.Secure.DONOTKILL_PROC);
+        if (order == null) {
+            Secure.putString(resolver, android.provider.Settings.Secure.DONOTKILL_PROC, "");
+            order = Secure.getString(resolver, android.provider.Settings.Secure.DONOTKILL_PROC);
+        }
+        List<String> mPackageNames = new LinkedList<String>(Arrays.asList(order.split(",")));
+        if (mPackageNames.contains(packageName)) {
+            ret = 1;
+        } else {
+            ret = 0;
+        }
+        return ret;
+    }
+
+    public void cleanupDoNotKill(String pkgName) {
+        //Check if app is whitelisted and remove from settings key
+        String order = Secure.getString(mContext.getContentResolver(),
+				android.provider.Settings.Secure.DONOTKILL_PROC);
+        if (order != null) {
+            List<String> mPackageNames = new LinkedList<String>(Arrays.asList(order.split(",")));
+            if (mPackageNames.contains(pkgName)) {
+	        mPackageNames.remove(pkgName);
+	        StringBuilder packageList = new StringBuilder();
+	        for (String s : mPackageNames) {
+                    if (packageList.length() > 0) {
+                        packageList.append(",");
+                     }
+                     packageList.append(s);
+                }
+                Secure.putString(mContext.getContentResolver(), android.provider.Settings.Secure.DONOTKILL_PROC,
+											packageList.toString());
+                updateDoNotKill();
+            }
+        }
     }
 
     private final class ClearStorageConnection implements ServiceConnection {
@@ -12982,6 +13121,9 @@ public class PackageManagerService extends IPackageManager.Stub {
         if (callingPackage == null) {
             callingPackage = Integer.toString(Binder.getCallingUid());
         }
+        //Check if present in lowmemorykiller whitelist and remove
+        cleanupDoNotKill(appPackageName);
+
         setEnabledSetting(appPackageName, null, newState, flags, userId, callingPackage);
     }
 
