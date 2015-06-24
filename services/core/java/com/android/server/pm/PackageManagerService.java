@@ -172,6 +172,7 @@ import android.os.storage.StorageEventListener;
 import android.os.storage.StorageManager;
 import android.os.storage.VolumeInfo;
 import android.os.storage.VolumeRecord;
+import android.provider.Settings.Secure; 
 import android.security.KeyStore;
 import android.security.SystemKeyStore;
 import android.system.ErrnoException;
@@ -259,6 +260,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -13326,6 +13328,29 @@ public class PackageManagerService extends IPackageManager.Stub {
         return ret;
     }
 
+    /* Check if app is in recents privacy list and remove from settings key, or simply
+     * cleanup stale packages if pkgName is NULL
+     */
+    public void cleanupRecentsPrivacy(String pkgName) {
+        String order = Secure.getString(mContext.getContentResolver(),
+				android.provider.Settings.Secure.SYSUI_RECENTS_PRIVACY);
+        if (order != null) {
+            List<String> mPackageNames = new LinkedList<String>(Arrays.asList(order.split(",")));
+            if (mPackageNames.contains(pkgName)) {
+	        mPackageNames.remove(pkgName);
+	        StringBuilder packageList = new StringBuilder();
+	        for (String s : mPackageNames) {
+                    if (packageList.length() > 0) {
+                        packageList.append(",");
+                    }
+                    packageList.append(s);
+                }
+                Secure.putString(mContext.getContentResolver(), android.provider.Settings.Secure.SYSUI_RECENTS_PRIVACY,
+											       packageList.toString());
+            }
+        }
+    }
+
     private final class ClearStorageConnection implements ServiceConnection {
         IMediaContainerService mContainerService;
 
@@ -14495,6 +14520,10 @@ public class PackageManagerService extends IPackageManager.Stub {
         if (callingPackage == null) {
             callingPackage = Integer.toString(Binder.getCallingUid());
         }
+
+        //Check if present in recents privacy list and remove
+        cleanupRecentsPrivacy(appPackageName);
+
         setEnabledSetting(appPackageName, null, newState, flags, userId, callingPackage);
     }
 
