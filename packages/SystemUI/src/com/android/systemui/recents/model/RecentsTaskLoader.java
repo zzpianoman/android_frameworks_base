@@ -471,6 +471,12 @@ public class RecentsTaskLoader {
         Drawable applicationIcon = mApplicationIconCache.getAndInvalidateIfModified(t.key);
         Bitmap thumbnail = mThumbnailCache.getAndInvalidateIfModified(t.key);
 
+        // If package is blacklisted, load default thumbnail in place of app thumbnail
+        RecentsConfiguration config = RecentsConfiguration.getInstance();
+        if (config.blacklistedApps.contains(t.key.getPackageName())) {
+            thumbnail = mDefaultThumbnail;
+        }
+
         // Grab the thumbnail/icon from the cache, if either don't exist, then trigger a reload and
         // use the default assets in their place until they load
         boolean requiresLoad = (applicationIcon == null) || (thumbnail == null);

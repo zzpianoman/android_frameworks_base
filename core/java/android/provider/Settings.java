@@ -6064,6 +6064,12 @@ public final class Settings {
         public static final String RECENTS_LONG_PRESS_ACTIVITY = "recents_long_press_activity";
 
         /**
+         * List of Recents with hidden thumbnail image
+         * @hide
+         */
+        public static final String SYSUI_RECENTS_PRIVACY = "sysui_recents_privacy";
+
+        /**
          * Whether to enable "advanced mode" for the current user.
          * Boolean setting. 0 = no, 1 = yes.
          * @hide

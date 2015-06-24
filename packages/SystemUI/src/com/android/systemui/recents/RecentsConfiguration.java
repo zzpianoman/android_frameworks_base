@@ -31,6 +31,9 @@ import com.android.systemui.R;
 import com.android.systemui.recents.misc.Console;
 import com.android.systemui.recents.misc.SystemServicesProxy;
 
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 
 /** A static Recents configuration for the current context
  * NOTE: We should not hold any references to a Context from a static instance */
@@ -135,6 +138,7 @@ public class RecentsConfiguration {
     public boolean useHardwareLayers;
     public int altTabKeyDelay;
     public boolean fakeShadows;
+    public List<String> blacklistedApps;
 
     /** Dev options and global settings */
     public boolean lockToAppEnabled;
@@ -306,6 +310,16 @@ public class RecentsConfiguration {
                 Settings.Global.DEVELOPMENT_SETTINGS_ENABLED) != 0;
         lockToAppEnabled = ssp.getSystemSetting(context,
                 Settings.System.LOCK_TO_APP_ENABLED) != 0;
+        // Refresh blacklisted recents thumbnails from settings
+        String order = Settings.Secure.getString(context.getContentResolver(),
+                                android.provider.Settings.Secure.SYSUI_RECENTS_PRIVACY);
+        if (order == null) {
+            Settings.Secure.putString(context.getContentResolver(),
+                                android.provider.Settings.Secure.SYSUI_RECENTS_PRIVACY, "");
+            order = Settings.Secure.getString(context.getContentResolver(),
+                                android.provider.Settings.Secure.SYSUI_RECENTS_PRIVACY);
+        }
+        blacklistedApps = new LinkedList<String>(Arrays.asList(order.split(",")));
     }
 
     /** Called when the configuration has changed, and we want to reset any configuration specific
