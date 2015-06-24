@@ -2767,6 +2767,15 @@ public final class Settings {
                 "hide_rotation_lock_toggle_for_accessibility";
 
         /**
+         * Call recording format value
+         * 0: AMR_WB
+         * 1: MPEG_4
+         * Default: 0
+         * @hide
+         */
+        public static final String CALL_RECORDING_FORMAT = "call_recording_format";
+
+        /**
          * Whether the phone vibrates when it is ringing due to an incoming call. This will
          * be used by Phone and Setting apps; it shouldn't affect other apps.
          * The value is boolean (1 or 0).
@@ -8040,6 +8049,14 @@ public final class Settings {
          * @hide
          */
         public static final String LTE_SERVICE_FORCED = "lte_service_forced";
+
+        /**
+         * Whether the system auto-configure the priority of the wifi ap's or use
+         * the manual settings established by the user.
+         * <> 0 to autoconfigure, 0 to manual settings. Default is <> 0.
+         * @hide
+         */
+        public static final String WIFI_AUTO_PRIORITIES_CONFIGURATION = "wifi_auto_priority";
 
         /**
          * Settings to backup. This is here so that it's in the same place as the settings
