@@ -5953,6 +5953,12 @@ public final class Settings {
         public static final String CAMERA_GESTURE_DISABLED = "camera_gesture_disabled";
 
         /**
+         * List of Recents with hidden thumbnail image
+         * @hide
+         */
+        public static final String SYSUI_RECENTS_PRIVACY = "sysui_recents_privacy";
+
+        /**
          * Whether the camera launch gesture to double tap the power button when the screen is off
          * should be disabled.
          *
