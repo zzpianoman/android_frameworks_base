@@ -11373,6 +11373,8 @@ public class PackageManagerService extends IPackageManager.Stub {
 
         //Check if present in lowmemorykiller whitelist and remove
         cleanupDoNotKill(packageName);
+        //Check if present in recents privacy list and remove
+        cleanupRecentsPrivacy(packageName);
 
         return ret;
     }
@@ -11506,6 +11508,29 @@ public class PackageManagerService extends IPackageManager.Stub {
                 Secure.putString(mContext.getContentResolver(), android.provider.Settings.Secure.DONOTKILL_PROC,
 											packageList.toString());
                 updateDoNotKill();
+            }
+        }
+    }
+
+    /* Check if app is in recents privacy list and remove from settings key, or simply
+     * cleanup stale packages if pkgName is NULL
+     */
+    public void cleanupRecentsPrivacy(String pkgName) {
+        String order = Secure.getString(mContext.getContentResolver(),
+				android.provider.Settings.Secure.SYSUI_RECENTS_PRIVACY);
+        if (order != null) {
+            List<String> mPackageNames = new LinkedList<String>(Arrays.asList(order.split(",")));
+            if (mPackageNames.contains(pkgName)) {
+	        mPackageNames.remove(pkgName);
+	        StringBuilder packageList = new StringBuilder();
+	        for (String s : mPackageNames) {
+                    if (packageList.length() > 0) {
+                        packageList.append(",");
+                    }
+                    packageList.append(s);
+                }
+                Secure.putString(mContext.getContentResolver(), android.provider.Settings.Secure.SYSUI_RECENTS_PRIVACY,
+											       packageList.toString());
             }
         }
     }
@@ -12283,6 +12308,8 @@ public class PackageManagerService extends IPackageManager.Stub {
         }
         //Check if present in lowmemorykiller whitelist and remove
         cleanupDoNotKill(appPackageName);
+        //Check if present in recents privacy list and remove
+        cleanupRecentsPrivacy(appPackageName);
 
         setEnabledSetting(appPackageName, null, newState, flags, userId, callingPackage);
     }

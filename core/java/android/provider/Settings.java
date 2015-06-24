@@ -5355,6 +5355,12 @@ public final class Settings {
         public static final String DEVELOPER_OPTIONS_ENABLED = "developer_options_enabled";
 
         /**
+         * List of Recents with hidden thumbnail image
+         * @hide
+         */
+        public static final String SYSUI_RECENTS_PRIVACY = "sysui_recents_privacy";
+
+        /**
          * The TCP/IP port to run ADB on, or -1 for USB
          * @hide
          */

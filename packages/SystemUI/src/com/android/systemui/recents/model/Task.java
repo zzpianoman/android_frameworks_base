@@ -108,6 +108,10 @@ public class Task {
                     + "lat: " + lastActiveTime + ", "
                     + baseIntent.getComponent().getPackageName();
         }
+
+        public String getPackageName() {
+            return baseIntent.getComponent().getPackageName();
+        }
     }
 
     public TaskKey key;
