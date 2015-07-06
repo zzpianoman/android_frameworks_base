@@ -820,8 +820,12 @@ public abstract class PanelView extends FrameLayout {
     }
 
 
-    protected void startUnlockHintAnimation() {
 
+    protected void startUnlockHintAnimation() {
+        startHintAnimation(false);
+    }
+
+    protected void startHintAnimation(boolean isFingerprintHint) {
         // We don't need to hint the user if an animation is already running or the user is changing
         // the expansion.
         if (mHeightAnimator != null || mTracking) {
@@ -837,7 +841,11 @@ public abstract class PanelView extends FrameLayout {
                 mHintAnimationRunning = false;
             }
         });
-        mStatusBar.onUnlockHintStarted();
+        if (isFingerprintHint) {
+            mStatusBar.onFingerprintHintStarted();
+        } else {
+            mStatusBar.onUnlockHintStarted();
+        }
         mHintAnimationRunning = true;
     }
 
@@ -863,7 +871,6 @@ public abstract class PanelView extends FrameLayout {
                 if (mCancelled) {
                     mHeightAnimator = null;
                     onAnimationFinished.run();
-                    mStatusBar.requestVisualizer(true, 250);
                 } else {
                     startUnlockHintAnimationPhase2(onAnimationFinished);
                 }
@@ -900,7 +907,7 @@ public abstract class PanelView extends FrameLayout {
             public void onAnimationEnd(Animator animation) {
                 mHeightAnimator = null;
                 onAnimationFinished.run();
-                mStatusBar.requestVisualizer(true, 200);
+                mStatusBar.requestVisualizer(null, 250);
             }
         });
         animator.start();

@@ -51,6 +51,8 @@ import android.widget.TextView;
 
 import com.android.internal.util.cm.LockscreenShortcutsHelper;
 import com.android.keyguard.KeyguardStatusView;
+import com.android.keyguard.KeyguardUpdateMonitor;
+import com.android.keyguard.KeyguardUpdateMonitorCallback;
 import com.android.systemui.R;
 import com.android.systemui.cm.UserContentObserver;
 import com.android.systemui.qs.QSContainer;
@@ -366,12 +368,14 @@ public class NotificationPanelView extends PanelView implements
     public void onAttachedToWindow() {
         mSecureCameraLaunchManager.create();
         mSettingsObserver.observe();
+        KeyguardUpdateMonitor.getInstance(mContext).registerCallback(mInfoCallback);
     }
 
     @Override
     public void onDetachedFromWindow() {
         mSecureCameraLaunchManager.destroy();
         mSettingsObserver.unobserve();
+        KeyguardUpdateMonitor.getInstance(mContext).removeCallback(mInfoCallback);
     }
 
     private void startQsSizeChangeAnimation(int oldHeight, final int newHeight) {
@@ -1081,7 +1085,6 @@ public class NotificationPanelView extends PanelView implements
     private void setKeyguardBottomAreaVisibility(int statusBarState,
             boolean goingToFullShade) {
         if (goingToFullShade) {
-            mStatusBar.requestVisualizer(false, 0);
             mKeyguardBottomArea.animate().cancel();
             mKeyguardBottomArea.animate()
                     .alpha(0f)
@@ -1120,7 +1123,6 @@ public class NotificationPanelView extends PanelView implements
                         .setDuration(mStatusBar.getKeyguardFadingAwayDuration()/2)
                         .start();
             }
-            mStatusBar.requestVisualizer(false, 0);
         } else if (mStatusBarState == StatusBarState.SHADE_LOCKED
                 && statusBarState == StatusBarState.KEYGUARD) {
             mKeyguardStatusView.animate().cancel();
@@ -1133,7 +1135,6 @@ public class NotificationPanelView extends PanelView implements
                     .setDuration(320)
                     .setInterpolator(PhoneStatusBar.ALPHA_IN)
                     .withEndAction(mAnimateKeyguardStatusViewVisibleEndRunnable);
-            mStatusBar.requestVisualizer(true, 320);
         } else if (statusBarState == StatusBarState.KEYGUARD) {
             mKeyguardStatusView.animate().cancel();
             mKeyguardStatusViewAnimating = false;
@@ -1870,7 +1871,8 @@ public class NotificationPanelView extends PanelView implements
     @Override
     public void onSwipingAnimationFinished(boolean snappingBack) {
         if (snappingBack) {
-            mStatusBar.requestVisualizer(true, 300);
+            mStatusBar.setVisualizerTouching(false);
+            mStatusBar.requestVisualizer(null, 0);
         }
     }
 
@@ -1989,9 +1991,6 @@ public class NotificationPanelView extends PanelView implements
     }
 
     public void setEmptyDragAmount(float amount) {
-        if (amount == 0 && mStatusBarState == StatusBarState.KEYGUARD) {
-            mStatusBar.requestVisualizer(true, 300);
-        }
         float factor = 0.8f;
         if (mNotificationStackScroller.getNotGoneChildCount() > 0) {
             factor = 0.4f;
@@ -2036,6 +2035,11 @@ public class NotificationPanelView extends PanelView implements
 
         // Hide "No notifications" in QS.
         mNotificationStackScroller.updateEmptyShadeView(mShadeEmpty && !mQsExpanded);
+        if (mStatusBarState == StatusBarState.KEYGUARD
+                && (!mQsExpanded || mQsExpandImmediate || mIsExpanding
+                && mQsExpandedWhenExpandingStarted)) {
+            positionClockAndNotifications();
+        }
     }
 
     public void setQsScrimEnabled(boolean qsScrimEnabled) {
@@ -2123,4 +2127,13 @@ public class NotificationPanelView extends PanelView implements
                     Settings.System.DOUBLE_TAP_SLEEP_GESTURE, 1, UserHandle.USER_CURRENT) == 1;
         }
     }
+
+    private KeyguardUpdateMonitorCallback mInfoCallback = new KeyguardUpdateMonitorCallback() {
+        @Override
+        public void onFingerprintAttemptFailed() {
+            if (!mStatusBar.isBouncerShowing()) {
+                NotificationPanelView.super.startHintAnimation(true /* fingerprintHint */);
+            }
+        }
+    };
 }
