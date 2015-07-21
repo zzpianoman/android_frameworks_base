@@ -17,21 +17,9 @@
      limitations under the License.
 -->
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
-  <string name="profileNameDefault">Стандартний</string>
-  <string name="profileNameWork">Робота</string>
-  <string name="profileNameHome">Дім</string>
-  <string name="profileNameSilent">Беззвучний</string>
-  <string name="profileNameNight">Ніч</string>
-  <string name="profileNameAutomobile">Автомобіль</string>
-  <string name="profileGroupPhone">Телефон</string>
-  <string name="profileGroupCalendar">Календар</string>
-  <string name="profileGroupGmail">Gmail</string>
-  <string name="profileGroupEmail">Email</string>
-  <string name="profileGroupSMS">SMS</string>
-  <string name="wildcardProfile">Інше</string>
-  <string name="profile_none">Немає</string>
   <string name="profile_picker_title">Профілі</string>
   <string name="global_action_choose_profile">Профіль</string>
+  <string name="profile_none">Немає</string>
   <string name="global_action_screenshot">Скріншот</string>
   <string name="permlab_receiveProtectedSms">отримувати захищені SMS</string>
   <string name="permdesc_receiveProtectedSms">Дозволяє програмі отримувати захищені SMS.</string>
@@ -216,4 +204,9 @@
   <string name="quick_settings_tile_flashlight_not_title">Ліхтарик увімкнений</string>
   <string name="quick_settings_tile_flashlight_not_summary">Торкніться, щоб вимкнути</string>
   <string name="storage_sd_dock_card">SD-карта док-станції</string>
+  <string name="fingerprint_default_name">Відбиток пальця <xliff:g id="number">%d</xliff:g></string>
+  <string name="permlab_accessFingerprintService">Доступ до відбитків пальців</string>
+  <string name="permdesc_accessFingerprintService">Дозволяє додатку отримувати доступ до служби відбитків пальців. Додаток зможе додавати, видаляти, перейменовувати збережені відбитки та використовувати їх для автентифікації</string>
+  <string name="permlab_resetBatteryStats">скинути статистику акумулятора</string>
+  <string name="permdesc_resetBatteryStats">Дозволити програмі скидати дані про використання акумулятора.</string>
 </resources>
