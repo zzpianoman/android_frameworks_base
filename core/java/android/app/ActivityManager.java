@@ -472,7 +472,11 @@ public class ActivityManager {
      * off certain features that require more RAM.
      */
     public boolean isLowRamDevice() {
-        return isLowRamDeviceStatic();
+        if ("true".equals(SystemProperties.get("ro.config.low_ram_hide", "false"))) {
+            return false;
+        } else {
+            return isLowRamDeviceStatic();
+        }
     }
 
     /** @hide */
