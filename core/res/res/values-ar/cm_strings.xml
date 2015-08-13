@@ -18,7 +18,7 @@
 -->
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
   <string name="profile_picker_title">الأوضاع</string>
-  <string name="global_action_choose_profile">الشخصية</string>
+  <string name="global_action_choose_profile">الوضع</string>
   <string name="profile_none">لا شيء</string>
   <string name="global_action_screenshot">لقطة للشاشة</string>
   <string name="permlab_receiveProtectedSms">استلام رسائل نصية قصيرة محمية</string>
@@ -207,4 +207,6 @@
   <string name="permdesc_accessFingerprintService">يسمح للتطبيق بالوصول إلى خدمة بصمات الأصابع. ويمكن للتطبيق إضافة وحذف وإعادة تسمية ومصادقة بصمات الأصابع</string>
   <string name="permlab_resetBatteryStats">إعادة تعيين إحصائيات البطارية</string>
   <string name="permdesc_resetBatteryStats">يسمح للتطبيق بإعادة تعيين بيانات استخدام بطارية ذات المستوى المنخفض الحالي.</string>
+  <string name="silent_mode_priority">الأولوية</string>
+  <string name="silent_mode_none">لا شيء</string>
 </resources>
