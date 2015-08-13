@@ -26,6 +26,7 @@ import android.app.IAlarmManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ApplicationInfo;
@@ -61,6 +62,8 @@ import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Iterator;  
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
@@ -68,6 +71,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set; 
 import java.util.Locale;
 import java.util.TimeZone;
 
@@ -160,6 +164,7 @@ class AlarmManagerService extends SystemService {
     long mStartCurrentDelayTime;
     long mNextNonWakeupDeliveryTime;
     int mNumTimeChanged;
+    private SettingsObserver mSettingsObserver;
 
     private final SparseArray<AlarmManager.AlarmClockInfo> mNextAlarmClockForUser =
             new SparseArray<>();
@@ -168,6 +173,10 @@ class AlarmManagerService extends SystemService {
     private final SparseBooleanArray mPendingSendNextAlarmClockChangedForUser =
             new SparseBooleanArray();
     private boolean mNextAlarmClockMayChange;
+
+    private Set<String> mSeenAlarms = new HashSet<String>();
+    private Set<String> mBlockedAlarms = new HashSet<String>();
+    private int mAlarmBlockingEnabled;
 
     // May only use on mHandler's thread, locking not required.
     private final SparseArray<AlarmManager.AlarmClockInfo> mHandlerSparseAlarmClockArray =
@@ -693,6 +702,59 @@ class AlarmManagerService extends SystemService {
         publishBinderService(Context.ALARM_SERVICE, mService);
 
         mQSObserver = QSUtils.registerObserverForQSChanges(mContext, mQSListener);
+
+        mSettingsObserver = new SettingsObserver(mHandler);
+        final ContentResolver resolver = mContext.getContentResolver();
+
+        resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.ALARM_BLOCKING_ENABLED),
+                    false, mSettingsObserver, UserHandle.USER_ALL);
+        resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.ALARM_BLOCKING_LIST),
+                    false, mSettingsObserver, UserHandle.USER_ALL);
+
+        updateSettingsLocked();
+    }
+
+   private void updateSettingsLocked() {
+        final ContentResolver resolver = mContext.getContentResolver();
+
+        mAlarmBlockingEnabled = Settings.System.getIntForUser(resolver,
+                Settings.System.ALARM_BLOCKING_ENABLED,
+                0, UserHandle.USER_CURRENT);
+
+        String blockedAlarmList = Settings.System.getStringForUser(resolver,
+                Settings.System.ALARM_BLOCKING_LIST,
+                UserHandle.USER_CURRENT);
+        setBlockedAlarms(blockedAlarmList);
+        Slog.d(TAG, "mAlarmBlockingEnabled=" + mAlarmBlockingEnabled +
+                     " blockedAlarmList=" + blockedAlarmList);
+    }
+
+    private void handleSettingsChangedLocked() {
+        updateSettingsLocked();
+    }
+
+    private final class UserSwitchedReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            synchronized (mLock) {
+                handleSettingsChangedLocked();
+            }
+        }
+    }
+
+    private final class SettingsObserver extends ContentObserver {
+        public SettingsObserver(Handler handler) {
+            super(handler);
+        }
+
+        @Override
+        public void onChange(boolean selfChange, Uri uri) {
+            synchronized (mLock) {
+                handleSettingsChangedLocked();
+            }
+        }
     }
 
     @Override
@@ -761,6 +823,24 @@ class AlarmManagerService extends SystemService {
             Slog.w(TAG, "set/setRepeating ignored because there is no intent");
             return;
         }
+
+        String tag = Alarm.makeTag(operation, type);
+        boolean blockAlarm = false;
+
+        if (!mSeenAlarms.contains(tag)) {
+            mSeenAlarms.add(tag);
+        }
+        if (mAlarmBlockingEnabled == 1) {
+            if (mBlockedAlarms.contains(tag)) {
+                blockAlarm = true;
+            }
+        }
+
+	if (blockAlarm) {
+ 	   Slog.w(TAG, "blockAlarm: blocked alarm=" + tag +
+                        " from uid=" + Binder.getCallingUid() + " pid=" + Binder.getCallingPid());
+	   return;
+	}
 
         // Sanity check the window length.  This will catch people mistakenly
         // trying to pass an end-of-window timestamp rather than a duration.
@@ -1021,7 +1101,32 @@ class AlarmManagerService extends SystemService {
                 }
             }
         }
+
+        @Override
+        public String getSeenAlarms(){
+            StringBuffer buffer = new StringBuffer();
+            Iterator<String> nextAlarm = mSeenAlarms.iterator();
+            while (nextAlarm.hasNext()){
+                String AlarmTag = nextAlarm.next();
+                buffer.append(AlarmTag + "|");
+            }
+            if(buffer.length()>0){
+                buffer.deleteCharAt(buffer.length() - 1);
+            }
+            return buffer.toString();
+        }
     };
+
+    private void setBlockedAlarms(String alarmTagsString) {
+        mBlockedAlarms = new HashSet<String>();
+
+        if (alarmTagsString!=null && alarmTagsString.length()!=0){
+            String[] parts = alarmTagsString.split("\\|");
+            for(int i = 0; i < parts.length; i++){
+                mBlockedAlarms.add(parts[i]);
+            }
+        }
+    }
 
     void dumpImpl(PrintWriter pw) {
         synchronized (mLock) {
@@ -1725,6 +1830,7 @@ class AlarmManagerService extends SystemService {
         public PriorityClass priorityClass;
         public int uid;
         public int pid;
+        private boolean mIsBlocked; 
 
         public Alarm(int _type, long _when, long _whenElapsed, long _windowLength, long _maxWhen,
                 long _interval, PendingIntent _op, WorkSource _ws,
@@ -1786,6 +1892,15 @@ class AlarmManagerService extends SystemService {
                     pw.print(" count="); pw.println(count);
             pw.print(prefix); pw.print("operation="); pw.println(operation);
         }
+
+        public void setIsBlocked(boolean value) {
+            mIsBlocked = value;
+        }
+
+        public boolean isBlocked() {
+            return mIsBlocked;
+        }
+
     }
 
     void recordWakeupAlarms(ArrayList<Batch> batches, long nowELAPSED, long nowRTC) {
