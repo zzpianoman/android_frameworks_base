@@ -420,6 +420,22 @@ public class AlarmManager
     }
 
     /**
+     * Get seen alarms for alarms blocker
+     *
+     * @hide
+     */
+    public String getSeenAlarms()
+    {
+        try {
+            if (mService != null) {
+                return mService.getSeenAlarms();
+            }
+        } catch (RemoteException e) {
+        }
+        return null;
+    }
+
+    /**
      * Available inexact recurrence interval recognized by
      * {@link #setInexactRepeating(int, long, long, PendingIntent)}
      * when running on Android prior to API 19.
