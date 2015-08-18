@@ -63,6 +63,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -467,7 +469,13 @@ public class ActivityManager {
      * off certain features that require more RAM.
      */
     public boolean isLowRamDevice() {
-        return isLowRamDeviceStatic();
+        String order = SystemProperties.get("ro.config.lowram_hide_apps", "none");
+        List<String> mPackageNames = new LinkedList<String>(Arrays.asList(order.split(",")));
+        if (mPackageNames.contains(mContext.getPackageName())) {
+            return false;
+        } else {
+            return isLowRamDeviceStatic();
+        }
     }
 
     /** @hide */
