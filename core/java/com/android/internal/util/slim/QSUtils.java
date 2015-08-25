@@ -67,9 +67,6 @@ public class QSUtils {
                     case QSConstants.TILE_HOTSPOT:
                     case QSConstants.TILE_DATA:
                     case QSConstants.TILE_ROAMING:
-                    case QSConstants.TILE_APN:
-                        removeTile = !deviceSupportsMobile;
-                        break;
                     case QSConstants.TILE_DDS:
                         removeTile = !deviceSupportsDdsSupported(context);
                         break;

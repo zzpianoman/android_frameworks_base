@@ -145,7 +145,7 @@ public class AccessPointControllerImpl implements NetworkController.AccessPointC
         }
     }
 
-    private void fireAcccessPointsCallback(List<AccessPoint> aps) {
+    private void fireAcccessPointsCallback(AccessPoint[] aps) {
         for (AccessPointCallback callback : mCallbacks) {
             callback.onAccessPointsChanged(aps);
         }
@@ -214,7 +214,7 @@ public class AccessPointControllerImpl implements NetworkController.AccessPointC
             aps.add(ap);
         }
         Collections.sort(aps, mByStrength);
-        fireAcccessPointsCallback(aps);
+        fireAcccessPointsCallback(aps.toArray(new AccessPoint[aps.size()]));
     }
 
     private final ActionListener mConnectListener = new ActionListener() {
