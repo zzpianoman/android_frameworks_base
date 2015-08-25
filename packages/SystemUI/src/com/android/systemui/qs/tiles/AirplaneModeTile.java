@@ -37,8 +37,6 @@ public class AirplaneModeTile extends QSTile<QSTile.BooleanState> {
     private final AnimationIcon mDisable =
             new AnimationIcon(R.drawable.ic_signal_airplane_disable_animation);
 
-    private static final Intent WIRELESS_SETTINGS = new Intent(Settings.ACTION_WIRELESS_SETTINGS);
-
     private final GlobalSetting mSetting;
 
     private boolean mListening;
