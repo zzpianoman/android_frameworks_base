@@ -40,7 +40,6 @@ public class QSConstants {
     public static final String TILE_NFC = "nfc";
     public static final String TILE_COMPASS = "compass";
     public static final String TILE_LOCKSCREEN = "lockscreen";
-    public static final String TILE_LTE = "lte";
     public static final String TILE_VISUALIZER = "visualizer";
     public static final String TILE_SCREEN_TIMEOUT = "screen_timeout";
     public static final String TILE_USB_TETHER = "usb_tether";
@@ -75,7 +74,6 @@ public class QSConstants {
         TILES_AVAILABLE.add(TILE_NFC);
         TILES_AVAILABLE.add(TILE_COMPASS);
         TILES_AVAILABLE.add(TILE_LOCKSCREEN);
-        TILES_AVAILABLE.add(TILE_LTE);
         TILES_AVAILABLE.add(TILE_VISUALIZER);
         TILES_AVAILABLE.add(TILE_SCREEN_TIMEOUT);
         TILES_AVAILABLE.add(TILE_USB_TETHER);

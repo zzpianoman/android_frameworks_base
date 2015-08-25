@@ -96,13 +96,6 @@ public class QSUtils {
         }
     }
 
-    public static boolean deviceSupportsLte(Context ctx) {
-        final TelephonyManager tm = (TelephonyManager)
-                ctx.getSystemService(Context.TELEPHONY_SERVICE);
-        return (tm.getLteOnCdmaMode() == PhoneConstants.LTE_ON_CDMA_TRUE)
-                || tm.getLteOnGsmMode() != 0;
-    }
-
     public static boolean deviceSupportsDdsSupported(Context context) {
         TelephonyManager tm = (TelephonyManager)
                 context.getSystemService(Context.TELEPHONY_SERVICE);
