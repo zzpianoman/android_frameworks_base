@@ -3627,6 +3627,7 @@ public final class Settings {
 
             MOVED_TO_GLOBAL = new HashSet<String>();
             MOVED_TO_GLOBAL.add(Settings.Global.ADB_ENABLED);
+            MOVED_TO_GLOBAL.add(Settings.Global.ADB_NOTIFY);
             MOVED_TO_GLOBAL.add(Settings.Global.ASSISTED_GPS_ENABLED);
             MOVED_TO_GLOBAL.add(Settings.Global.BLUETOOTH_ON);
             MOVED_TO_GLOBAL.add(Settings.Global.BUGREPORT_IN_POWER_MENU);
@@ -4157,6 +4158,14 @@ public final class Settings {
          */
         @Deprecated
         public static final String ADB_ENABLED = Global.ADB_ENABLED;
+
+       /**
+        * Whether to display the ADB notification.
+        * @deprecated Use {@link android.provider.Settings.Global#ADB_NOTIFY} instead
+        * @hide
+        */
+        @Deprecated
+        public static final String ADB_NOTIFY = "adb_notify";
 
         /**
          * The TCP/IP port to run ADB on, or -1 for USB
@@ -5463,6 +5472,13 @@ public final class Settings {
         public static final String PRIVACY_GUARD_NOTIFICATION = "privacy_guard_notification";
 
         /**
+         * Whether user is allowed to pull down quick settings on secure keyguard.
+         * @hide
+         */
+        public static final String STATUS_BAR_LOCKED_ON_SECURE_KEYGUARD
+                = "status_bar_locked_on_secure_keyguard";
+
+        /**
          * Names of the packages that the current user has explicitly allowed to
          * see all of the user's notifications, separated by ':'.
          *
@@ -5670,7 +5686,8 @@ public final class Settings {
             UI_NIGHT_MODE,
             SLEEP_TIMEOUT,
             PRIVACY_GUARD_DEFAULT,
-            PRIVACY_GUARD_NOTIFICATION
+            PRIVACY_GUARD_NOTIFICATION,
+            STATUS_BAR_LOCKED_ON_SECURE_KEYGUARD
         };
 
         /**

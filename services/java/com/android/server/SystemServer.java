@@ -192,19 +192,6 @@ public final class SystemServer {
         mFactoryTestMode = FactoryTest.getMode();
     }
 
-    private class AdbPortObserver extends ContentObserver {
-        public AdbPortObserver() {
-            super(null);
-        }
-        @Override
-        public void onChange(boolean selfChange) {
-            int adbPort = Settings.Secure.getInt(mContentResolver,
-                Settings.Secure.ADB_PORT, 0);
-            // setting this will control whether ADB runs on TCP/IP or USB
-            SystemProperties.set("service.adb.tcp.port", Integer.toString(adbPort));
-        }
-    }
-
     private void run() {
         // If a device's clock is before 1970 (before 0), a lot of
         // APIs crash dealing with negative numbers, notably
