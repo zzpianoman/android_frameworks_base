@@ -199,6 +199,7 @@ public class NotificationPanelView extends PanelView implements
 
     private int mOneFingerQuickSettingsInterceptMode;
     private int mQsSmartPullDown;
+    private boolean mStatusBarLockedOnSecureKeyguard;
     public NotificationPanelView(Context context, AttributeSet attrs) {
         super(context, attrs);
         setWillNotDraw(!DEBUG);
@@ -2132,7 +2133,6 @@ public class NotificationPanelView extends PanelView implements
             mOneFingerQuickSettingsInterceptMode = Settings.System.getIntForUser(
                     resolver, Settings.System.STATUS_BAR_QUICK_QS_PULLDOWN,
                     ONE_FINGER_QS_INTERCEPT_OFF, UserHandle.USER_CURRENT);
-                    UserHandle.USER_CURRENT) == 1;
             mStatusBarLockedOnSecureKeyguard = Settings.Secure.getIntForUser(
                     resolver, Settings.Secure.STATUS_BAR_LOCKED_ON_SECURE_KEYGUARD, 1,
                     UserHandle.USER_CURRENT) == 1;
