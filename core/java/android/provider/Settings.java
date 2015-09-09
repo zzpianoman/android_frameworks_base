@@ -2838,6 +2838,21 @@ public final class Settings {
         public static final String SHOW_WEB_SUGGESTIONS = "show_web_suggestions";
 
         /**
+         * Contains the notifications light maximum brightness to use.
+         * @hide
+         */
+        public static final String NOTIFICATION_LIGHT_BRIGHTNESS_LEVEL =
+                "notification_light_brightness_level";
+
+        /**
+         * Whether to allow notifications with the screen on or DayDreams.
+         * The value is boolean (1 or 0). Default will always be false.
+         * @hide
+         */
+        public static final String NOTIFICATION_LIGHT_SCREEN_ON =
+                "notification_light_screen_on_enable";
+
+        /**
          * Whether the notification LED should repeatedly flash when a notification is
          * pending. The value is boolean (1 or 0).
          * @hide
@@ -3662,7 +3677,9 @@ public final class Settings {
             DISPLAY_AUTO_OUTDOOR_MODE,
             LIVE_DISPLAY_HINTED,
             NONE_IS_SILENT,
-            ALLOW_LIGHTS
+            ALLOW_LIGHTS,
+            NOTIFICATION_LIGHT_BRIGHTNESS_LEVEL,
+            NOTIFICATION_LIGHT_SCREEN_ON
         };
 
         /**
@@ -6136,11 +6153,20 @@ public final class Settings {
         public static final String LIVE_DISPLAY_COLOR_MATRIX = "live_display_color_matrix";
 
         /**
-         * Whether to show the lockscreen visualizer.
-         * 0 will disable it, anything else will enable it. Default is on.
+         * Whether to show the keyguard visualizer.
+         * Boolean setting. 0 = no, 1 = yes.
          * @hide
          */
         public static final String LOCKSCREEN_VISUALIZER_ENABLED = "lockscreen_visualizer";
+
+        /**
+         * Whether to show quick settings tiles with sensitive data in secure lockscreens.
+         * 0 will ignore the sensitive data flag, anything else will take care of that
+         * flag. Default is off.
+         * @hide
+         */
+        public static final String LOCKSCREEN_HIDE_TILES_WITH_SENSITIVE_DATA =
+                "lockscreen_hide_qs_tiles_with_sensitive_data";
 
         /**
          * This are the settings to be backed up.

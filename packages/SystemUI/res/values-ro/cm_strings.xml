@@ -28,6 +28,8 @@
   <string name="accessibility_quick_settings_roaming_on">Roaming pornit.</string>
   <string name="accessibility_quick_settings_network_adb_off">ADB prin rețea inactiv.</string>
   <string name="accessibility_quick_settings_network_adb_on">ADB prin rețea activ.</string>
+  <string name="accessibility_quick_settings_network_adb_changed_off">ADB prin rețea dezactivat.</string>
+  <string name="accessibility_quick_settings_network_adb_changed_on">ADB prin rețea activat.</string>
   <string name="accessibility_quick_settings_ambient_display_off">Afișare ambientală oprită.</string>
   <string name="accessibility_quick_settings_ambient_display_on">Afișare ambientală pornită.</string>
   <string name="accessibility_quick_settings_color_inversion_off">Inversiune de culoare oprită.</string>
@@ -37,6 +39,9 @@
   <string name="accessibility_quick_settings_location_battery_saving">Raportarea locației: mod economisire baterie.</string>
   <string name="accessibility_quick_settings_location_gps_only">Raportarea locației: doar senzori.</string>
   <string name="accessibility_quick_settings_location_high_accuracy">Raportarea locației: precizie ridicată.</string>
+  <string name="accessibility_quick_settings_location_changed_battery_saving">Raportarea locației modificată în modul economisire baterie.</string>
+  <string name="accessibility_quick_settings_location_changed_gps_only">Raportarea locației modificată în modul doar senzori.</string>
+  <string name="accessibility_quick_settings_location_changed_high_accuracy">Raportarea locației modificată în modul precizie ridicată.</string>
   <string name="accessibility_quick_settings_lte_off">4G oprit.</string>
   <string name="accessibility_quick_settings_lte_on">4G pornit.</string>
   <string name="accessibility_quick_settings_lte_changed_off">LTE oprit.</string>
@@ -46,6 +51,7 @@
   <string name="accessibility_quick_settings_nfc_changed_off">NFC oprit.</string>
   <string name="accessibility_quick_settings_nfc_changed_on">NFC pornit.</string>
   <string name="accessibility_quick_settings_profiles">Profil: <xliff:g id="profile" example="Default">%s</xliff:g>.</string>
+  <string name="accessibility_quick_settings_profiles_changed">Profil schimbat în <xliff:g id="profile" example="Default">%s</xliff:g>.</string>
   <string name="accessibility_quick_settings_sync_off">Sincronizare oprită.</string>
   <string name="accessibility_quick_settings_sync_on">Sincronizare pornită.</string>
   <string name="accessibility_quick_settings_sync_changed_off">Sincronizare oprită.</string>
@@ -72,6 +78,7 @@
   <string name="quick_settings_lte_label">4G</string>
   <string name="quick_settings_screen_timeout_detail_title">Timpul de expirare ecran</string>
   <string name="quick_settings_usb_tether_label">Tethering USB</string>
+  <string name="quick_settings_heads_up_label">Atenționare</string>
   <string name="quick_settings_ambient_display_label">Afișare ambientală</string>
   <string name="quick_settings_sync_label">Sincronizare</string>
   <string name="quick_settings_custom_tile_detail_title">Card personalizat</string>
@@ -92,7 +99,7 @@
   <string name="navring_target_reset">Comenzile rapide din bara de navigare au fost resetate la valorile implicite</string>
   <string name="navring_action_open_ime_switcher">Deschide Comutator IME</string>
   <string name="navring_action_kill_app">Opreşte aplicaţia</string>
-  <string name="navring_action_none">Nici una</string>
+  <string name="navring_action_none">Nimic</string>
   <string name="navring_action_take_screenshot">Captează ecranul</string>
   <string name="navring_action_ring_vibrate">Sunet/Vibrație</string>
   <string name="navring_action_ring_silent">Sunet/Silențios</string>
@@ -110,4 +117,5 @@
   <string name="dynamic_qs_tile_next_alarm_label">Următoarea alarmă</string>
   <string name="dynamic_qs_tile_ime_selector_label">Selector IME</string>
   <string name="dynamic_qs_tile_su_label">Acces root</string>
+  <string name="fingerprint_try_again_hint">Vă rugăm să scanați din nou</string>
 </resources>

@@ -31,7 +31,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -57,10 +56,16 @@ public class CustomQSTile extends QSTile<QSTile.State> {
     private StatusBarPanelCustomTile mTile;
     private CustomQSDetailAdapter mDetailAdapter;
     private boolean mCollapsePanel;
+    private boolean mHasSensitiveData;
 
     public CustomQSTile(Host host, StatusBarPanelCustomTile tile) {
         super(host);
         mTile = tile;
+    }
+
+    @Override
+    public boolean hasSensitiveData() {
+        return mHasSensitiveData;
     }
 
     @Override
@@ -141,6 +146,7 @@ public class CustomQSTile extends QSTile<QSTile.State> {
         mOnClickUri = customTile.onClickUri;
         mExpandedStyle = customTile.expandedStyle;
         mCollapsePanel = customTile.collapsePanel;
+        mHasSensitiveData = customTile.sensitiveData;
         mDetailAdapter = new CustomQSDetailAdapter();
     }
 
@@ -190,34 +196,16 @@ public class CustomQSTile extends QSTile<QSTile.State> {
         @Override
         public View createDetailView(Context context, View convertView, ViewGroup parent) {
             View rootView = null;
-            if (mExpandedStyle == null) {
-                rootView = (LinearLayout) LayoutInflater.from(context)
-                        .inflate(R.layout.qs_custom_detail, parent, false);
-                ImageView imageView = (ImageView)
-                        rootView.findViewById(R.id.custom_qs_tile_icon);
-                TextView customTileTitle = (TextView)
-                        rootView.findViewById(R.id.custom_qs_tile_title);
-                TextView customTilePkg = (TextView) rootView
-                        .findViewById(R.id.custom_qs_tile_package);
-                TextView customTileContentDesc = (TextView) rootView
-                        .findViewById(R.id.custom_qs_tile_content_description);
-                // icon is cached in state, fetch it
-                imageView.setImageDrawable(getState().icon.getDrawable(mContext));
-                customTileTitle.setText(mTile.getCustomTile().label);
-                if (isDynamicTile()) {
-                    customTilePkg.setText(R.string.quick_settings_dynamic_tile_detail_title);
-                } else {
-                    customTilePkg.setText(mTile.getPackage());
-                    customTileContentDesc.setText(mTile.getCustomTile().contentDescription);
-                }
-            } else {
+            if (mExpandedStyle != null) {
                 switch (mExpandedStyle.getStyle()) {
                     case CustomTile.ExpandedStyle.GRID_STYLE:
                         rootView = QSDetailItemsGrid.inflate(context, parent, false);
-                        mGridAdapter = ((QSDetailItemsGrid) rootView)
-                                .createAndSetAdapter(mTile.getPackage(),
-                                        mExpandedStyle.getExpandedItems());
-                        mGridAdapter.setOnPseudoGridItemClickListener(this);
+                        if (mExpandedStyle.getExpandedItems() != null) {
+                            mGridAdapter = ((QSDetailItemsGrid) rootView)
+                                    .createAndSetAdapter(mTile.getPackage(),
+                                            mExpandedStyle.getExpandedItems());
+                            mGridAdapter.setOnPseudoGridItemClickListener(this);
+                        }
                         break;
                     case CustomTile.ExpandedStyle.REMOTE_STYLE:
                         rootView = (LinearLayout) LayoutInflater.from(context)
@@ -233,18 +221,53 @@ public class CustomQSTile extends QSTile<QSTile.State> {
                         }
                         break;
                     case CustomTile.ExpandedStyle.LIST_STYLE:
-                    default:
                         rootView = QSDetailItemsList.convertOrInflate(context, convertView, parent);
+                        ((QSDetailItemsList) rootView)
+                                .setEmptyState(R.drawable.ic_qs_custom_detail_empty,
+                                        R.string.quick_settings_custom_qs_detail_empty_text);
                         ListView listView = ((QSDetailItemsList) rootView).getListView();
                         listView.setDivider(null);
-                        listView.setOnItemClickListener(this);
-                        listView.setAdapter(mListAdapter =
-                                new QSDetailItemsList.QSCustomDetailListAdapter(mTile.getPackage(),
-                                        context, Arrays.asList(mExpandedStyle.getExpandedItems())));
+                        if (mExpandedStyle.getExpandedItems() != null) {
+                            listView.setAdapter(mListAdapter =
+                                    new QSDetailItemsList.QSCustomDetailListAdapter(
+                                            mTile.getPackage(), context,
+                                            Arrays.asList(mExpandedStyle.getExpandedItems())));
+                            listView.setOnItemClickListener(this);
+                        }
+                        break;
+                    default:
+                        // Shouldn't ever happen, but handle it anyway.
+                        rootView = (LinearLayout) LayoutInflater.from(context)
+                                .inflate(R.layout.qs_custom_detail, parent, false);
+                        populateDefaultLayout(rootView);
                         break;
                 }
+            } else {
+                rootView = (LinearLayout) LayoutInflater.from(context)
+                        .inflate(R.layout.qs_custom_detail, parent, false);
+                populateDefaultLayout(rootView);
             }
             return rootView;
+        }
+
+        private void populateDefaultLayout(View rootView) {
+            ImageView imageView = (ImageView)
+                    rootView.findViewById(R.id.custom_qs_tile_icon);
+            TextView customTileTitle = (TextView)
+                    rootView.findViewById(R.id.custom_qs_tile_title);
+            TextView customTilePkg = (TextView) rootView
+                    .findViewById(R.id.custom_qs_tile_package);
+            TextView customTileContentDesc = (TextView) rootView
+                    .findViewById(R.id.custom_qs_tile_content_description);
+            // icon is cached in state, fetch it
+            imageView.setImageDrawable(getState().icon.getDrawable(mContext));
+            customTileTitle.setText(mTile.getCustomTile().label);
+            if (isDynamicTile()) {
+                customTilePkg.setText(R.string.quick_settings_dynamic_tile_detail_title);
+            } else {
+                customTilePkg.setText(mTile.getPackage());
+                customTileContentDesc.setText(mTile.getCustomTile().contentDescription);
+            }
         }
 
         @Override

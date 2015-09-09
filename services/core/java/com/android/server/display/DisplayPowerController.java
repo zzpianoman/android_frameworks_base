@@ -567,6 +567,7 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
             } else {
                 setProximitySensorEnabled(false);
                 mWaitingForNegativeProximity = false;
+                mProximity = PROXIMITY_UNKNOWN;
             }
             if (mScreenOffBecauseOfProximity
                     && mProximity != PROXIMITY_POSITIVE) {
@@ -1163,6 +1164,10 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
 
     private static int clampAbsoluteBrightness(int value) {
         return MathUtils.constrain(value, PowerManager.BRIGHTNESS_OFF, PowerManager.BRIGHTNESS_ON);
+    }
+
+    void systemReady() {
+        mLiveDisplayController.systemReady();
     }
 
     private final class DisplayControllerHandler extends Handler {
