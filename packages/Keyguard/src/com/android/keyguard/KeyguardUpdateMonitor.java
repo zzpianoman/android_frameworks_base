@@ -44,9 +44,7 @@ import android.os.BatteryManager;
 import android.os.Handler;
 import android.os.IRemoteCallback;
 import android.os.Message;
-import android.os.PowerManager;
 import android.os.RemoteException;
-import android.os.SystemClock;
 import android.os.UserHandle;
 import android.provider.Settings;
 import android.service.fingerprint.FingerprintManager;
@@ -57,7 +55,6 @@ import android.telephony.SubscriptionInfo;
 import android.telephony.SubscriptionManager;
 import android.telephony.SubscriptionManager.OnSubscriptionsChangedListener;
 import android.telephony.TelephonyManager;
-import android.text.TextUtils;
 import android.util.Log;
 import android.util.SparseBooleanArray;
 
@@ -90,7 +87,7 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener {
     private static final boolean DEBUG = KeyguardConstants.DEBUG;
     private static final boolean DEBUG_SIM_STATES = DEBUG || false;
     private static final int FAILED_BIOMETRIC_UNLOCK_ATTEMPTS_BEFORE_BACKUP = 3;
-    private static final int FAILED_FINGERPRINT_UNLOCK_ATTEMPTS_BEFORE_BACKUP = 2;
+    private static final int FAILED_FINGERPRINT_UNLOCK_ATTEMPTS_BEFORE_BACKUP = 3;
     private static final int LOW_BATTERY_THRESHOLD = 20;
 
     private static final String ACTION_FACE_UNLOCK_STARTED
@@ -233,7 +230,7 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener {
                     handleFingerprintAcquired(msg.arg1);
                     break;
                 case MSG_FINGERPRINT_PROCESSED:
-                    handleFingerprintProcessed(msg.arg1);
+                    handleFingerprintProcessed(msg.arg1 == 1, msg.arg2);
                     break;
                 case MSG_FINGERPRINT_STATE_CHANGED:
                     handleFingerprintStateChanged(msg.arg1);
@@ -348,43 +345,9 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener {
         }
     }
 
-    private void onFingerprintAttemptFailed() {
-        if (!hasBootCompleted()) {
+    private void handleFingerprintProcessed(boolean error, int fingerprintIdOrError) {
+        if (!hasBootCompleted() || isSimPinSecure()) {
             return;
-        }
-        mFailedFingerprintAttempts++;
-        for (int i = 0; i < mCallbacks.size(); i++) {
-            KeyguardUpdateMonitorCallback cb = mCallbacks.get(i).get();
-            if (cb != null) {
-                cb.onFingerprintAttemptFailed();
-            }
-        }
-    }
-
-    private void onFingerprintRecognized(int userId) {
-        if (!hasBootCompleted()) {
-            return;
-        }
-        mUserFingerprintRecognized.put(userId, true);
-        for (int i = 0; i < mCallbacks.size(); i++) {
-            KeyguardUpdateMonitorCallback cb = mCallbacks.get(i).get();
-            if (cb != null) {
-                cb.onFingerprintRecognized(userId);
-            }
-        }
-    }
-
-    private void handleFingerprintProcessed(int fingerprintId) {
-        if (!hasBootCompleted()) {
-            return;
-        }
-        if (fingerprintId == 0) {
-            // Not a valid fingerprint, start another authenticate call to try again
-            FingerprintManager fpm =
-                    (FingerprintManager) mContext.getSystemService(Context.FINGERPRINT_SERVICE);
-            fpm.authenticate();
-            onFingerprintAttemptFailed();
-            return; // not a valid fingerprint
         }
 
         final int userId;
@@ -398,11 +361,49 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener {
             Log.d(TAG, "Fingerprint disabled by DPM for userId: " + userId);
             return;
         }
+        if (error) {
+            onFingerprintAttemptFailed(true, fingerprintIdOrError);
+        } else if (fingerprintIdOrError == 0) {
+            // not a valid fingerprint
+            onFingerprintAttemptFailed(false, 0);
+            return;
+        }
         final ContentResolver res = mContext.getContentResolver();
         final List<Fingerprint> fingerprints = FingerprintUtils.getFingerprintsForUser(res, userId);
+        boolean foundFingerprint = false;
         for (Fingerprint fingerprint : fingerprints) {
-            if (fingerprint.getFingerId() == fingerprintId) {
+            if (fingerprint.getFingerId() == fingerprintIdOrError) {
+                foundFingerprint = true;
                 onFingerprintRecognized(userId);
+                break;
+            }
+        }
+        if (!foundFingerprint) {
+            onFingerprintAttemptFailed(true,
+                    FingerprintManager.FINGERPRINT_ERROR_UNABLE_TO_PROCESS);
+        }
+    }
+
+    private void onFingerprintAttemptFailed(boolean error, int errorCode) {
+        if (!error) mFailedFingerprintAttempts++;
+        for (int i = 0; i < mCallbacks.size(); i++) {
+            KeyguardUpdateMonitorCallback cb = mCallbacks.get(i).get();
+            if (cb != null) {
+                cb.onFingerprintAttemptFailed(error, errorCode);
+            }
+        }
+    }
+
+    private void onFingerprintRecognized(int userId) {
+        if (isMaxFingerprintAttemptsReached()) {
+            Log.d(TAG, "maximum fingerprint attempts reached.");
+            return;
+        }
+        mUserFingerprintRecognized.put(userId, true);
+        for (int i = 0; i < mCallbacks.size(); i++) {
+            KeyguardUpdateMonitorCallback cb = mCallbacks.get(i).get();
+            if (cb != null) {
+                cb.onFingerprintRecognized(userId);
             }
         }
     }
@@ -567,7 +568,8 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener {
             new FingerprintManagerReceiver() {
         @Override
         public void onProcessed(int fingerprintId) {
-            mHandler.obtainMessage(MSG_FINGERPRINT_PROCESSED, fingerprintId, 0).sendToTarget();
+            mHandler.obtainMessage(MSG_FINGERPRINT_PROCESSED, 0 /* no error */, fingerprintId)
+                    .sendToTarget();
         };
 
         @Override
@@ -582,7 +584,8 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener {
 
         @Override
         public void onError(int error) {
-            if (DEBUG) Log.w(TAG, "FingerprintManager reported error: " + error);
+            mHandler.obtainMessage(MSG_FINGERPRINT_PROCESSED, 1 /* error */, error).sendToTarget();
+
         }
     };
 
@@ -824,10 +827,6 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener {
         trustManager.registerTrustListener(this);
 
         mLockPatternUtils = new LockPatternUtils(mContext);
-
-        if (mLockPatternUtils.usingFingerprint()) {
-            setFingerprintListening(true);
-        }
     }
 
     private boolean isDeviceProvisionedInSettingsDb() {
@@ -1355,6 +1354,10 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener {
 
     public boolean isMaxFingerprintAttemptsReached() {
         return mFailedFingerprintAttempts >= FAILED_FINGERPRINT_UNLOCK_ATTEMPTS_BEFORE_BACKUP;
+    }
+
+    public boolean isOnLastFingerprintAttempt() {
+        return mFailedFingerprintAttempts == FAILED_FINGERPRINT_UNLOCK_ATTEMPTS_BEFORE_BACKUP;
     }
 
     public boolean isAlternateUnlockEnabled() {

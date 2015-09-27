@@ -91,6 +91,7 @@ import com.android.server.pm.Settings.DatabaseVersion;
 import com.android.server.storage.DeviceStorageMonitorInternal;
 import com.android.server.Watchdog;
 
+import cyanogenmod.app.suggest.AppSuggestManager;
 import org.xmlpull.v1.XmlSerializer;
 
 import android.app.ActivityManager;
@@ -3593,6 +3594,13 @@ public class PackageManagerService extends IPackageManager.Stub {
         return null;
     }
 
+    private boolean shouldIncludeResolveActivity(Intent intent) {
+        synchronized(mPackages) {
+            AppSuggestManager suggest = AppSuggestManager.getInstance(mContext);
+            return (suggest != null) ? suggest.handles(intent) : false;
+        }
+    }
+
     @Override
     public List<ResolveInfo> queryIntentActivities(Intent intent,
             String resolvedType, int flags, int userId) {
@@ -3641,6 +3649,9 @@ public class PackageManagerService extends IPackageManager.Stub {
                 if (resolveInfo != null) {
                     result.add(resolveInfo);
                     Collections.sort(result, mResolvePrioritySorter);
+                }
+                if (result.size() == 0 && shouldIncludeResolveActivity(intent)) {
+                    result.add(mResolveInfo);
                 }
                 return result;
             }
@@ -7244,6 +7255,9 @@ public class PackageManagerService extends IPackageManager.Stub {
                             mResolveComponentName);
                     break;
                 }
+            }
+            if (mResolveActivity.theme == 0) {
+                mResolveActivity.theme = R.style.Theme_DeviceDefault_Resolver;
             }
         }
     }

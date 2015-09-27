@@ -138,6 +138,18 @@ public class UnlockMethodCache {
         public void onFaceUnlockStateChanged(boolean running, int userId) {
             update(false /* updateAlways */);
         }
+
+        @Override
+        public void onFingerprintAttemptFailed(boolean error, int errorCode) {
+            update(!error);
+        }
+
+        @Override
+        public void onKeyguardBouncerChanged(boolean bouncer) {
+            if (!bouncer && mFingerUnlockRunning) {
+                update(true /* updateAlways */);
+            }
+        }
     };
 
     public boolean isTrustManaged() {
