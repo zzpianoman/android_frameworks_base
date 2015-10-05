@@ -55,6 +55,7 @@ public class QSConstants {
     public static final String TILE_SCREEN_OFF = "screen_off";
     public static final String TILE_REBOOT = "reboot";
     public static final String TILE_BATTERY_RESERVE = "battery_reserve";
+    public static final String TILE_BATTERY_SAVER = "battery_saver";
 
     public static final String DYNAMIC_TILE_NEXT_ALARM = "next_alarm";
     public static final String DYNAMIC_TILE_IME_SELECTOR = "ime_selector";
@@ -100,6 +101,7 @@ public class QSConstants {
         STATIC_TILES_AVAILABLE.add(TILE_SCREEN_OFF);
         STATIC_TILES_AVAILABLE.add(TILE_REBOOT);
         STATIC_TILES_AVAILABLE.add(TILE_BATTERY_RESERVE);
+        STATIC_TILES_AVAILABLE.add(TILE_BATTERY_SAVER);
 
         DYNAMIC_TILES_AVAILABLE.add(DYNAMIC_TILE_NEXT_ALARM);
         DYNAMIC_TILES_AVAILABLE.add(DYNAMIC_TILE_IME_SELECTOR);
