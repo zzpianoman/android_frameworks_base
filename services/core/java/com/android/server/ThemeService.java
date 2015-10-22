@@ -42,7 +42,6 @@ import android.content.res.ThemeConfig;
 import android.content.res.IThemeChangeListener;
 import android.content.res.IThemeService;
 import android.database.ContentObserver;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -68,6 +67,8 @@ import android.util.Log;
 
 import com.android.internal.R;
 import com.android.internal.util.cm.ImageUtils;
+
+import cyanogenmod.providers.CMSettings;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -438,6 +439,11 @@ public class ThemeService extends IThemeService.Stub {
             incrementProgress(progressIncrement);
         }
 
+        if (request.getLiveLockScreenThemePackageName() != null) {
+            updateLiveLockScreen(request.getLiveLockScreenThemePackageName());
+            incrementProgress(progressIncrement);
+        }
+
         try {
             updateProvider(request, updateTime);
         } catch(IllegalArgumentException e) {
@@ -463,8 +469,8 @@ public class ThemeService extends IThemeService.Stub {
         final String defaultThemePkg = Settings.Secure.getString(resolver,
                 Settings.Secure.DEFAULT_THEME_PACKAGE);
         if (!TextUtils.isEmpty(defaultThemePkg)) {
-            String defaultThemeComponents = Settings.Secure.getString(resolver,
-                    Settings.Secure.DEFAULT_THEME_COMPONENTS);
+            String defaultThemeComponents = CMSettings.Secure.getString(resolver,
+                    CMSettings.Secure.DEFAULT_THEME_COMPONENTS);
             List<String> components;
             if (TextUtils.isEmpty(defaultThemeComponents)) {
                 components = ThemeUtils.getAllComponents();
@@ -720,6 +726,11 @@ public class ThemeService extends IThemeService.Stub {
                 ThemeUtils.closeQuietly(in);
             }
         }
+        return true;
+    }
+
+    private boolean updateLiveLockScreen(String pkgName) {
+        // TODO: do something meaningful here once ready
         return true;
     }
 
