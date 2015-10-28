@@ -2454,6 +2454,12 @@ public final class Settings {
          */
         public static final String BUTTON_BACKLIGHT_TIMEOUT = "button_backlight_timeout";
 
+        /** Whether to show the brightness slider in quick settings panel.
+         *
+         * @hide
+         */
+        public static final String QS_SHOW_BRIGHTNESS_SLIDER = "qs_show_brightness_slider";
+
         /** Whether to allow one finger quick settings expansion on the right side of the statusbar.
          *
          * @hide
