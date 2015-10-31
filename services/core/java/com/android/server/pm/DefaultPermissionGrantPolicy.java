@@ -657,7 +657,6 @@ final class DefaultPermissionGrantPolicy {
                 grantRuntimePermissionsLPw(vendingPackage, SMS_PERMISSIONS, userId);
             }	
 				
-			
             mService.mSettings.onDefaultRuntimePermissionsGrantedLPr(userId);
         }
     }
