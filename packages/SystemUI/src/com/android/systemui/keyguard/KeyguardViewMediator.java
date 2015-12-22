@@ -376,6 +376,8 @@ public class KeyguardViewMediator extends SystemUI {
 
         @Override
         public void onUserSwitching(int userId) {
+            mHandler.obtainMessage(KEYGUARD_FINGERPRINT_AUTH, 0, 0).sendToTarget();
+
             // Note that the mLockPatternUtils user has already been updated from setCurrentUser.
             // We need to force a reset of the views, since lockNow (called by
             // ActivityManagerService) will not reconstruct the keyguard if it is already showing.
@@ -393,6 +395,7 @@ public class KeyguardViewMediator extends SystemUI {
         @Override
         public void onUserSwitchComplete(int userId) {
             mSwitchingUser = false;
+            mHandler.obtainMessage(KEYGUARD_FINGERPRINT_AUTH, 1, 0).sendToTarget();
             if (userId != UserHandle.USER_OWNER) {
                 UserInfo info = UserManager.get(mContext).getUserInfo(userId);
                 if (info != null && info.isGuest()) {
@@ -501,7 +504,7 @@ public class KeyguardViewMediator extends SystemUI {
                     break;
                 case READY:
                     synchronized (this) {
-                        if (mInternallyDisabled) {
+                        if (mInternallyDisabled && !mUpdateMonitor.isSimPinSecure()) {
                             hideLocked();
                         } else if (isShowing()) {
                             resetStateLocked();
@@ -831,6 +834,7 @@ public class KeyguardViewMediator extends SystemUI {
                 android.Manifest.permission.CONTROL_KEYGUARD, null);
         mContext.registerReceiver(mBroadcastReceiver, new IntentFilter(KEYGUARD_SERVICE_ACTION_STATE_CHANGE),
                 android.Manifest.permission.CONTROL_KEYGUARD, null);
+        mContext.registerReceiver(mBroadcastReceiver, new IntentFilter(TelephonyManager.ACTION_PHONE_STATE_CHANGED));
 
         mKeyguardDisplayManager = new KeyguardDisplayManager(mContext);
 
@@ -1136,6 +1140,12 @@ public class KeyguardViewMediator extends SystemUI {
         return !mInternallyDisabled;
     }
 
+    private boolean isProfileDisablingKeyguard() {
+        final Profile activeProfile = ProfileManager.getInstance(mContext).getActiveProfile();
+        return activeProfile != null
+                && activeProfile.getScreenLockMode().getValue() == Profile.LockMode.DISABLE;
+    }
+
     /**
      * Same semantics as {@link android.view.WindowManagerPolicy#enableKeyguard}; provide
      * a way for external stuff to override normal keyguard behavior.  For instance
@@ -1164,7 +1174,7 @@ public class KeyguardViewMediator extends SystemUI {
                 // hiding keyguard that is showing, remember to reshow later
                 if (DEBUG) Log.d(TAG, "remembering to reshow, hiding keyguard, "
                         + "disabling status bar expansion");
-                mNeedToReshowWhenReenabled = true;
+                mNeedToReshowWhenReenabled = !isProfileDisablingKeyguard();
                 updateInputRestrictedLocked();
                 hideLocked();
             } else if (enabled && mNeedToReshowWhenReenabled) {
@@ -1549,6 +1559,9 @@ public class KeyguardViewMediator extends SystemUI {
                 mKeyguardBound = intent.getBooleanExtra(KEYGUARD_SERVICE_EXTRA_ACTIVE, false);
                 context.sendBroadcast(new Intent(LockscreenToggleTile.ACTION_APPLY_LOCKSCREEN_STATE)
                         .setPackage(context.getPackageName()));
+            } else if (TelephonyManager.ACTION_PHONE_STATE_CHANGED.equals(intent.getAction())) {
+                mPhoneState = intent.getStringExtra(TelephonyManager.EXTRA_STATE);
+                if (DEBUG) Log.d(TAG, "phone state change, new state: " + mPhoneState);
             }
         }
     };

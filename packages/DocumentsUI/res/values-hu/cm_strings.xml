@@ -16,5 +16,5 @@
      limitations under the License.
 -->
 <resources>
-  <string name="no_permission_for_drm">عذراً، لا يمكن مشاركة الملفات المحمية DRM</string>
+  <string name="no_permission_for_drm">Sajnáljuk, DRM védett fájlok nem oszthatók meg</string>
 </resources>
