@@ -43,6 +43,11 @@
         android:title="@string/qs_four_columns_title"
         android:defaultValue="false" />
 
+    <com.android.systemui.tuner.SystemSettingSwitchPreference
+        android:key="sysui_qs_main_tiles"
+        android:title="@string/qs_main_tiles_title"
+        android:defaultValue="true" />
+
     <PreferenceScreen
         android:title="@string/status_bar" >
 
