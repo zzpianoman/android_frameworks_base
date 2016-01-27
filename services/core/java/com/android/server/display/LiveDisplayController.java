@@ -84,7 +84,7 @@ public class LiveDisplayController {
     private boolean mUseColorEnhancement;
     private boolean mUseLowPower;
 
-    private final float[] mColorAdjustment = new float[] { 1.0f, 1.0f, 1.0f };
+    private final float[] mColorAdjustment = new float[] { 0.5f, 0.5f, 0.5f };
     private final float[] mRGB = new float[] { 0.0f, 0.0f, 0.0f };
 
     private final TwilightManager mTwilightManager;
@@ -185,7 +185,7 @@ public class LiveDisplayController {
         String[] colorAdjustment = colorAdjustmentTemp == null ?
                 null : colorAdjustmentTemp.split(" ");
         if (colorAdjustment == null || colorAdjustment.length != 3) {
-            colorAdjustment = new String[] { "1.0", "1.0", "1.0" };
+            colorAdjustment = new String[] { "0.5", "0.5", "0.5" };
         }
         try {
             mColorAdjustment[0] = Float.parseFloat(colorAdjustment[0]);
@@ -193,9 +193,9 @@ public class LiveDisplayController {
             mColorAdjustment[2] = Float.parseFloat(colorAdjustment[2]);
         } catch (NumberFormatException e) {
             Slog.e(TAG, e.getMessage(), e);
-            mColorAdjustment[0] = 1.0f;
-            mColorAdjustment[1] = 1.0f;
-            mColorAdjustment[2] = 1.0f;
+            mColorAdjustment[0] = 0.5f;
+            mColorAdjustment[1] = 0.5f;
+            mColorAdjustment[2] = 0.5f;
         }
 
         updateLiveDisplay(mCurrentLux);
