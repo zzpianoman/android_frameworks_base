@@ -31,6 +31,7 @@ import com.android.systemui.qs.tiles.AirplaneModeTile;
 import com.android.systemui.qs.tiles.BatterySaverTile;
 import com.android.systemui.qs.tiles.BluetoothTile;
 import com.android.systemui.qs.tiles.BrightnessTile;
+import com.android.systemui.qs.tiles.CaffeineTile;
 import com.android.systemui.qs.tiles.CastTile;
 import com.android.systemui.qs.tiles.CellularTile;
 import com.android.systemui.qs.tiles.ColorInversionTile;
@@ -286,6 +287,7 @@ public class QSTileHost implements QSTile.Host, Tunable {
         else if (tileSpec.equals("reboot")) return new RebootTile(this);
         else if (tileSpec.equals("battery_saver")) return new BatterySaverTile(this);
         else if (tileSpec.equals("quickrecord")) return new QuickRecordTile(this);
+        else if (tileSpec.equals("caffeine")) return new CaffeineTile(this);
         else if (tileSpec.startsWith(IntentTile.PREFIX)) return IntentTile.create(this,tileSpec);
         else throw new IllegalArgumentException("Bad tile spec: " + tileSpec);
     }
