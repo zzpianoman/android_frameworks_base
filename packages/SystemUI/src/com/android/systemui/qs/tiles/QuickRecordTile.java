@@ -24,6 +24,9 @@ import android.content.res.Resources;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaRecorder;
+import android.media.MediaScannerConnection;
+import android.net.Uri;
+import android.os.Environment;
 import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -35,33 +38,46 @@ import com.android.systemui.qs.QSTile;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class QuickRecordTile extends QSTile<QSTile.BooleanState> {
 
     private static final String TAG = "QuickRecordTile";
+    private static final String RECORDINGS_DIRECTORY = "QuickRecord";
 
     public static final int STATE_IDLE = 0;
     public static final int STATE_PLAYING = 1;
     public static final int STATE_RECORDING = 2;
     public static final int STATE_JUST_RECORDED = 3;
     public static final int STATE_NO_RECORDING = 4;
-    public static final int MAX_RECORD_TIME = 120000;
+    public static final int BITRATE = 22000;
+    // One hour maximum recording time
+    public static final int MAX_RECORD_TIME = 3600000;
 
     private File mFile;
     private Handler mHandler;
     private MediaPlayer mPlayer = null;
     private MediaRecorder mRecorder = null;
 
-    private static String mQuickAudio = null;
+    private static String mFileName = null;
+    private static File mFolder = new File(Environment.getExternalStorageDirectory() 
+                                                             + File.separator + RECORDINGS_DIRECTORY);
 
     private int mRecordingState = 0;
 
     public QuickRecordTile(Host host) {
         super(host);
         mHandler = new Handler();
-        mFile = new File(mContext.getFilesDir() + File.separator
-                + "quickrecord.3gp");
-        mQuickAudio = mFile.getAbsolutePath();
+        boolean success = true;
+        if (!mFolder.exists()) {
+            success = mFolder.mkdir();
+        }
+        if (success) {
+            mFileName = getLastFileName();
+        } else {
+            Log.d(TAG, "Failed to create External Storage directory " + mFolder);
+        }
     }
 
     @Override
@@ -84,10 +100,9 @@ public class QuickRecordTile extends QSTile<QSTile.BooleanState> {
 
     @Override
     protected void handleClick() {
-        if (mFile != null) {
-            if (!mFile.exists()) {
-                mRecordingState = STATE_NO_RECORDING;
-            }
+        mFileName = getLastFileName();
+        if (mFileName == null) {
+            mRecordingState = STATE_NO_RECORDING;
         }
         switch (mRecordingState) {
             case STATE_RECORDING:
@@ -107,6 +122,10 @@ public class QuickRecordTile extends QSTile<QSTile.BooleanState> {
 
     @Override
     protected void handleLongClick() {
+        mFileName = getLastFileName();
+        if (mFileName == null) {
+            mRecordingState = STATE_NO_RECORDING;
+        }
         switch (mRecordingState) {
             case STATE_NO_RECORDING:
             case STATE_IDLE:
@@ -121,10 +140,8 @@ public class QuickRecordTile extends QSTile<QSTile.BooleanState> {
         int playStateName = 0;
         int playStateIcon = 0;
         state.visible = true;
-        if (mFile != null) {
-            if (!mFile.exists()) {
-                mRecordingState = STATE_NO_RECORDING;
-            }
+        if (mFileName == null) {
+            mRecordingState = STATE_NO_RECORDING;
         }
         switch (mRecordingState) {
             case STATE_PLAYING:
@@ -184,8 +201,9 @@ public class QuickRecordTile extends QSTile<QSTile.BooleanState> {
 
     private void startPlaying() {
         mPlayer = new MediaPlayer();
+        mFileName = getLastFileName();
         try {
-            mPlayer.setDataSource(mQuickAudio);
+            mPlayer.setDataSource(mFileName);
             mPlayer.prepare();
             mPlayer.start();
             mRecordingState = STATE_PLAYING;
@@ -205,10 +223,13 @@ public class QuickRecordTile extends QSTile<QSTile.BooleanState> {
 
     private void startRecording() {
         mRecorder = new MediaRecorder();
+        mFileName = getTimestampFilename();
         mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-        mRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-        mRecorder.setOutputFile(mQuickAudio);
-        mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+        mRecorder.setOutputFormat(MediaRecorder.OutputFormat.AAC_ADTS);
+        mRecorder.setAudioEncodingBitRate(BITRATE);
+        mRecorder.setAudioSamplingRate(16000);
+        mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
+        mRecorder.setOutputFile(mFileName);
         try {
             mRecorder.prepare();
             mRecorder.start();
@@ -226,6 +247,39 @@ public class QuickRecordTile extends QSTile<QSTile.BooleanState> {
         mRecorder = null;
         mRecordingState = STATE_JUST_RECORDED;
         refreshState();
+        makeFileDiscoverable(mFileName);
         mHandler.postDelayed(delayTileRevert, 2000);
+    }
+
+    private String getTimestampFilename() {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd_HHmmss");
+        String currentTimeStamp = dateFormat.format(new Date());
+        if (!mFolder.exists()) {
+            mFolder.mkdir();
+        }
+        return (mFolder.getAbsolutePath() + File.separator + "Recording_" + currentTimeStamp + ".aac");
+    }
+
+    private String getLastFileName() {
+        if (!mFolder.exists()) {
+            mFolder.mkdir();
+        }
+        String[] files = mFolder.list();
+        if(files.length == 0) {
+            return null;
+        }
+        int fileIndex;
+        for (fileIndex=(files.length - 1); fileIndex>=0; fileIndex--) {
+            if (files[fileIndex].endsWith(".aac")) {
+                return (mFolder.getAbsolutePath() + File.separator + files[fileIndex]);
+            }
+        }
+        return null;
+    }
+
+    public void makeFileDiscoverable(String fileName) {
+        MediaScannerConnection.scanFile(mContext, new String[]{fileName}, null, null);
+        mContext.sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE,
+                                                                Uri.parse(fileName)));
     }
 }
