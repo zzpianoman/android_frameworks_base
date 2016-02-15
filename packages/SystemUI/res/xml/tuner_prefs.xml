@@ -20,6 +20,12 @@
     <Preference
         android:key="qs_tuner"
         android:title="@string/quick_settings" />
+    <!-- Quick Pulldown -->
+    <ListPreference
+        android:key="qs_quick_pulldown"
+        android:title="@string/status_bar_quick_qs_pulldown_title"
+        android:entries="@array/status_bar_quick_qs_pulldown_entries"
+        android:entryValues="@array/status_bar_quick_qs_pulldown_values" />
 
     <PreferenceScreen
         android:title="@string/status_bar" >
