@@ -21,10 +21,12 @@ import android.app.AlertDialog;
 import android.app.FragmentTransaction;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
+import android.content.res.Resources;
 import android.database.ContentObserver;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.Preference.OnPreferenceClickListener;
@@ -49,6 +51,7 @@ public class TunerFragment extends PreferenceFragment {
     private static final String KEY_QS_TUNER = "qs_tuner";
     private static final String KEY_DEMO_MODE = "demo_mode";
     private static final String KEY_BATTERY_PCT = "battery_pct";
+    private static final String STATUS_BAR_QUICK_QS_PULLDOWN = "qs_quick_pulldown";
 
     public static final String SETTING_SEEN_TUNER_WARNING = "seen_tuner_warning";
 
@@ -57,6 +60,7 @@ public class TunerFragment extends PreferenceFragment {
     private final SettingObserver mSettingObserver = new SettingObserver();
 
     private SwitchPreference mBatteryPct;
+    private ListPreference mQuickPulldown;
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -99,6 +103,7 @@ public class TunerFragment extends PreferenceFragment {
                         }
                     }).show();
         }
+        mQuickPulldown = (ListPreference) findPreference(STATUS_BAR_QUICK_QS_PULLDOWN);
     }
 
     @Override
@@ -107,7 +112,9 @@ public class TunerFragment extends PreferenceFragment {
         updateBatteryPct();
         getContext().getContentResolver().registerContentObserver(
                 System.getUriFor(SHOW_PERCENT_SETTING), false, mSettingObserver);
-
+        updateQuickPulldown();
+        getContext().getContentResolver().registerContentObserver(
+                Settings.System.getUriFor(STATUS_BAR_QUICK_QS_PULLDOWN), false, mSettingObserver);
         registerPrefs(getPreferenceScreen());
         MetricsLogger.visibility(getContext(), MetricsLogger.TUNER, true);
     }
@@ -116,7 +123,6 @@ public class TunerFragment extends PreferenceFragment {
     public void onPause() {
         super.onPause();
         getContext().getContentResolver().unregisterContentObserver(mSettingObserver);
-
         unregisterPrefs(getPreferenceScreen());
         MetricsLogger.visibility(getContext(), MetricsLogger.TUNER, false);
     }
@@ -177,6 +183,29 @@ public class TunerFragment extends PreferenceFragment {
         mBatteryPct.setOnPreferenceChangeListener(mBatteryPctChange);
     }
 
+    private void updateQuickPulldown() {
+        mQuickPulldown.setOnPreferenceChangeListener(null);
+        int quickPulldown = Settings.System.getInt(getContext().getContentResolver(),
+                Settings.System.STATUS_BAR_QUICK_QS_PULLDOWN, 1);
+        mQuickPulldown.setValue(String.valueOf(quickPulldown));
+        updatePulldownSummary(quickPulldown);
+        mQuickPulldown.setOnPreferenceChangeListener(mQuickPulldownChange);
+    }
+
+    private void updatePulldownSummary(int value) {
+        Resources res = getResources();
+
+        if (value == 0) {
+            // quick pulldown deactivated
+            mQuickPulldown.setSummary(res.getString(R.string.status_bar_quick_qs_pulldown_off));
+        } else {
+            String direction = res.getString(value == 2
+                    ? R.string.status_bar_quick_qs_pulldown_summary_left
+                    : R.string.status_bar_quick_qs_pulldown_summary_right);
+            mQuickPulldown.setSummary(res.getString(R.string.status_bar_quick_qs_pulldown_summary, direction));
+        }
+    }
+
     private final class SettingObserver extends ContentObserver {
         public SettingObserver() {
             super(new Handler());
@@ -186,6 +215,7 @@ public class TunerFragment extends PreferenceFragment {
         public void onChange(boolean selfChange, Uri uri, int userId) {
             super.onChange(selfChange, uri, userId);
             updateBatteryPct();
+            updateQuickPulldown();
         }
     }
 
@@ -195,6 +225,17 @@ public class TunerFragment extends PreferenceFragment {
             final boolean v = (Boolean) newValue;
             MetricsLogger.action(getContext(), MetricsLogger.TUNER_BATTERY_PERCENTAGE, v);
             System.putInt(getContext().getContentResolver(), SHOW_PERCENT_SETTING, v ? 1 : 0);
+            return true;
+        }
+    };
+
+    private final OnPreferenceChangeListener mQuickPulldownChange = new OnPreferenceChangeListener() {
+        @Override
+        public boolean onPreferenceChange(Preference preference, Object newValue) {
+            final int v = Integer.valueOf((String) newValue);
+            Settings.System.putInt(getContext().getContentResolver(),
+                              Settings.System.STATUS_BAR_QUICK_QS_PULLDOWN, v);
+            updatePulldownSummary(v);
             return true;
         }
     };
