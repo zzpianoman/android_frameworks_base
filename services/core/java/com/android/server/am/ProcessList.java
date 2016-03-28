@@ -187,8 +187,8 @@ final class ProcessList {
     // Custom OOM level limits for Tuna. 
     // TO DO: Open this up to system prop key to choose specific OOM values
     private final int[] mOomMinFreeTuna = new int[] {
-            20508, 30273, 70313,
-            82031, 93750, 193359
+            24576, 49152, 98304,
+            131072, 180224, 229376
     };    
     // The actual OOM killer memory levels we are using.
     private final int[] mOomMinFree = new int[mOomAdj.length];
